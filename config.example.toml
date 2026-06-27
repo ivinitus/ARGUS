@@ -1,0 +1,32 @@
+[extractor]
+base_url = "https://tracker.example.com"
+out_dir = "./output"
+project_id = "PROJECT"
+
+[auditor]
+model_provider = "openai"
+model_id = "example-model"
+region = "example-region"
+cloud_profile = ""
+api_base_url = ""
+api_key_env = "OPENAI_API_KEY"
+temperature = 0.0
+consensus_enabled = false
+chunk_max_parallel = 2
+env_check_inline = false
+env_check_sample_stride = 5
+env_check_region_crop_height = 180
+env_check_region_crop_bottom_height = 80
+env_check_engine = "off"
+
+[logging]
+verbose = false
+
+[notify]
+mode = "silent"
+tunnel_url = ""
+log_path = "~/.argus/notify.log"
+
+[batch]
+concurrency = 8
+extractor_concurrency = 4

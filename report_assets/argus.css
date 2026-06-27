@@ -1,0 +1,1875 @@
+
+:root {
+  --argus-navy: #232f3e;
+  --argus-navy-2: #161e2d;
+  --argus-blue: #0972d3;
+  --argus-blue-h: #0561b4;
+  --argus-bg: #fafafa;
+  --argus-surface: #ffffff;
+  --argus-border: #e9ebed;
+  --argus-text: #16191f;
+  --argus-text-2: #5f6b7a;
+  --argus-pass-bg: #d4edda;
+  --argus-pass-fg: #0f5132;
+  --argus-concerns-bg: #fff3cd;
+  --argus-concerns-fg: #664d03;
+  --argus-fail-bg: #f8d7da;
+  --argus-fail-fg: #842029;
+  --argus-sev-high: #d13212;
+  --argus-sev-medium: #b77100;
+  --argus-sev-low: #687078;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  background: var(--argus-bg);
+  color: var(--argus-text);
+}
+.argus-header {
+  background: var(--argus-navy);
+  color: #fff;
+  border-bottom: 1px solid var(--argus-navy-2);
+}
+.argus-header-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+/* Reset link styling on the brand wordmark so it remains visually
+   the white-on-navy logo we want, while still being clickable to /. */
+.argus-brand-link { color: inherit; text-decoration: none; }
+.argus-brand-link:hover .argus-logo { opacity: 0.85; }
+.argus-brand { display: flex; align-items: baseline; gap: 12px; }
+.argus-logo {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 1.5px;
+}
+.argus-tagline {
+  color: rgba(255,255,255,.65);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.argus-folder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255,255,255,.85);
+}
+.argus-folder-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.argus-chip {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.12);
+  font-size: 11px;
+  letter-spacing: .3px;
+}
+.argus-main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.argus-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.argus-stat {
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  /* Stat cards double as filter shortcuts. Render as buttons but
+     remove the default <button> chrome so they look like the
+     existing static cards — only the cursor + hover lift hint at
+     the new behaviour. */
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 60ms ease;
+}
+.argus-stat:hover {
+  border-color: var(--argus-blue);
+  transform: translateY(-1px);
+}
+.argus-stat:focus-visible {
+  outline: 2px solid var(--argus-blue);
+  outline-offset: 2px;
+}
+.argus-stat.argus-stat-active {
+  border-color: var(--argus-blue);
+  box-shadow: inset 0 0 0 1px var(--argus-blue);
+}
+.argus-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--argus-text-2);
+}
+.argus-stat-value {
+  font-size: 26px;
+  font-weight: 600;
+  margin-top: 4px;
+  line-height: 1;
+}
+.argus-stat-pass { color: var(--argus-pass-fg); }
+.argus-stat-concerns { color: var(--argus-concerns-fg); }
+.argus-stat-fail { color: var(--argus-fail-fg); }
+
+.argus-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  /* Sticky filters: the bar follows you down a long audits table so
+     refining mid-scroll doesn't require a return-to-top. The header
+     above is only ~50px tall, so top:0 keeps it just below the page
+     header naturally. background fills the gap so rows behind don't
+     bleed through; box-shadow gives a subtle depth cue when stuck. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--argus-bg);
+  padding: 10px 0 8px 0;
+  margin-top: -10px;
+  box-shadow: 0 4px 6px -4px rgba(0,0,0,.08);
+}
+.argus-filters.argus-filters-active {
+  /* Subtle blue tint when at least one filter is non-default — visual
+     reminder that the table below is showing a subset, not everything. */
+  background: linear-gradient(to bottom, #eff8ff 0%, var(--argus-bg) 100%);
+}
+.argus-input, .argus-select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 6px 10px;
+  border: 1px solid #aab7b8;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--argus-text);
+}
+.argus-input { min-width: 320px; }
+.argus-input:focus, .argus-select:focus {
+  outline: 2px solid var(--argus-blue);
+  outline-offset: -1px;
+  border-color: var(--argus-blue);
+}
+.argus-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--argus-text-2);
+}
+
+.argus-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.argus-table thead { background: #f2f3f3; }
+.argus-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--argus-text-2);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  border-bottom: 1px solid var(--argus-border);
+}
+.argus-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--argus-border);
+  vertical-align: top;
+}
+.argus-row { cursor: pointer; transition: background .12s; }
+.argus-row:hover td { background: #f6f7f7; }
+.argus-num { text-align: right; font-variant-numeric: tabular-nums; }
+.argus-tc {
+  max-width: 480px;
+  color: var(--argus-text-2);
+  font-size: 13px;
+}
+/* Two-line layout: test-run name (primary) on top, test-case (secondary)
+   below. Both lines truncate independently so a long testrun name
+   doesn't push the test-case off-screen. */
+.argus-tc-run {
+  color: var(--argus-text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.argus-testrun-link {
+  color: var(--argus-blue);
+  text-decoration: none;
+}
+.argus-testrun-link:hover {
+  color: var(--argus-blue-h);
+  text-decoration: underline;
+}
+.argus-tc-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--argus-text-2);
+}
+.argus-mp-badge {
+  display: inline-block;
+  background: #1976d2;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.argus-key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+}
+
+.argus-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+.argus-verdict-pass { background: var(--argus-pass-bg); color: var(--argus-pass-fg); }
+.argus-verdict-concerns { background: var(--argus-concerns-bg); color: var(--argus-concerns-fg); }
+.argus-verdict-fail { background: var(--argus-fail-bg); color: var(--argus-fail-fg); }
+.argus-verdict-unknown { background: #e9ebed; color: var(--argus-text-2); }
+
+.hidden { display: none !important; }
+.argus-detail-row td {
+  background: #f8f8f8;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--argus-border);
+}
+.argus-detail { display: flex; flex-direction: column; gap: 12px; }
+.argus-no-findings {
+  color: var(--argus-text-2);
+  font-style: italic;
+  padding: 8px 0;
+}
+.argus-env-violation {
+  background: #fff5f5;
+  border: 1px solid #f8d7da;
+  color: var(--argus-fail-fg);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.argus-env-violation code {
+  background: rgba(132,32,41,.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+/* Layer 3 dismissal banner. Muted grey (not red) on purpose — a
+   dismissed audit is a *resolved* state, not an alert. The reviewer
+   has decided this audit is a false positive and the dashboard agrees. */
+.argus-dismissed {
+  background: #f0f0f3;
+  border: 1px solid var(--argus-border);
+  border-left: 3px solid var(--argus-text-2);
+  color: var(--argus-text-2);
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.argus-dismissed-line { line-height: 1.6; }
+.argus-findings { display: flex; flex-direction: column; gap: 10px; }
+.argus-finding {
+  background: #fff;
+  border: 1px solid var(--argus-border);
+  border-left: 3px solid var(--argus-sev-low);
+  border-radius: 4px;
+  padding: 10px 14px;
+}
+.argus-finding-high { border-left-color: var(--argus-sev-high); }
+.argus-finding-medium { border-left-color: var(--argus-sev-medium); }
+.argus-finding-low { border-left-color: var(--argus-sev-low); }
+.argus-finding-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.argus-sev-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+}
+.argus-sev-high { background: var(--argus-sev-high); }
+.argus-sev-medium { background: var(--argus-sev-medium); }
+.argus-sev-low { background: var(--argus-sev-low); }
+.argus-finding-headline {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--argus-text);
+}
+.argus-finding-loc {
+  font-size: 12px;
+  color: var(--argus-text-2);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.argus-finding-body {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--argus-text);
+  white-space: pre-wrap;
+}
+.argus-thumbs {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.argus-thumbs .thumb {
+  display: inline-block;
+  border: 1px solid var(--argus-border);
+  border-radius: 4px;
+  overflow: hidden;
+  line-height: 0;
+  transition: box-shadow .12s;
+}
+.argus-thumbs .thumb:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+.argus-thumbs img {
+  width: 280px;
+  height: auto;
+  max-height: 180px;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.argus-thumb-missing {
+  font-size: 12px;
+  color: var(--argus-text-2);
+  font-style: italic;
+}
+.argus-detail-foot {
+  margin-top: 4px;
+  font-size: 13px;
+}
+.argus-link {
+  color: var(--argus-blue);
+  text-decoration: none;
+}
+.argus-link:hover { color: var(--argus-blue-h); text-decoration: underline; }
+.argus-muted { color: var(--argus-text-2); font-size: 12px; }
+.argus-empty {
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-border);
+  border-radius: 8px;
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--argus-text-2);
+}
+
+/* --- Severity pills next to the per-row finding count -------------------- */
+.argus-finding-count {
+  display: inline-block;
+  min-width: 18px;
+  text-align: right;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.argus-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  margin-left: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.argus-pill-high   { background: var(--argus-fail-bg); color: var(--argus-fail-fg); }
+.argus-pill-medium { background: var(--argus-concerns-bg); color: var(--argus-concerns-fg); }
+.argus-pill-low    { background: #e9ebed; color: var(--argus-text-2); }
+
+/* --- Sortable headers --------------------------------------------------- */
+.argus-sortable { cursor: pointer; user-select: none; }
+.argus-sortable:hover { background: #e8e8ed; }
+.argus-sort-indicator {
+  display: inline-block;
+  min-width: 10px;
+  margin-left: 4px;
+  color: var(--argus-text-2);
+  font-size: 10px;
+}
+.argus-sorted-asc .argus-sort-indicator::after { content: "▲"; }
+.argus-sorted-desc .argus-sort-indicator::after { content: "▼"; }
+
+/* --- Clear-filters button + live row count ------------------------------ */
+.argus-btn-clear {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid #aab7b8;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--argus-text);
+  cursor: pointer;
+}
+.argus-btn-clear:hover { background: #f6f7f7; border-color: var(--argus-text-2); }
+.argus-count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- Bookmark button ---------------------------------------------------- */
+.argus-bookmark {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 4px;
+  margin-right: 4px;
+  color: #b8c0c8;
+  vertical-align: middle;
+  border-radius: 3px;
+  transition: color 100ms ease, transform 80ms ease;
+  /* Force a font that ships a real outline-star glyph on every platform.
+     Without this, some Linux/Cloud-Desktop fonts substitute a tiny
+     square glyph for ☆ which is what produced the half-rendered icon
+     in the previous version. Apple Color Emoji / Segoe UI Symbol /
+     Noto Sans Symbols cover macOS, Windows, and Linux respectively. */
+  font-family: "Apple Color Emoji", "Segoe UI Symbol",
+               "Noto Sans Symbols 2", "Noto Sans Symbols",
+               "Symbola", sans-serif;
+}
+.argus-bookmark:hover {
+  color: #f4b400;
+  transform: scale(1.15);
+}
+.argus-bookmark.argus-bookmarked {
+  color: #f4b400;
+}
+.argus-bookmark:focus-visible {
+  outline: 2px solid var(--argus-blue);
+  outline-offset: 1px;
+}
+
+/* --- No-evidence callout ------------------------------------------------ */
+.argus-noevd-panel {
+  position: relative;
+  background: var(--argus-fail-bg);
+  border: 1px solid var(--argus-fail-fg);
+  border-left: 4px solid var(--argus-fail-fg);
+  border-radius: 8px;
+  padding: 14px 40px 14px 18px;
+  margin-bottom: 18px;
+}
+.argus-coverage {
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-border);
+  border-left: 4px solid var(--argus-concerns-fg);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+.argus-coverage-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.argus-coverage-sub {
+  color: var(--argus-text-2);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.argus-coverage h3 {
+  margin: 14px 0 6px 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--argus-text-2);
+}
+.argus-coverage-list { margin: 0; padding-left: 20px; font-size: 13px; }
+.argus-coverage-list li { margin-bottom: 4px; }
+.argus-coverage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.argus-coverage-table th,
+.argus-coverage-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--argus-border);
+  text-align: left;
+}
+.argus-coverage-clean { color: var(--argus-text-2); margin: 4px 0 0 0; }
+
+/* Coverage trigger — fixed pill in the top-right of the viewport that
+   stays visible while the operator scrolls the audit table. Click
+   opens the drawer. Visually a button, semantically a button (for
+   keyboard + screen-reader access). */
+.argus-coverage-trigger {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 1100;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--argus-fail-bg, #d13212);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+.argus-coverage-trigger:hover { filter: brightness(1.05); }
+.argus-coverage-trigger:focus-visible {
+  outline: 2px solid var(--argus-blue);
+  outline-offset: 2px;
+}
+.argus-coverage-trigger-icon { font-size: 14px; line-height: 1; }
+.argus-coverage-trigger-count {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+/* Drawer backdrop — full-viewport translucent overlay that dims the
+   page while the drawer is open and absorbs click-to-dismiss. */
+.argus-coverage-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  background: rgba(15, 20, 25, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+.argus-coverage-backdrop.argus-coverage-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Drawer — slide-in panel from the right edge. Off-screen by default
+   via translateX; the .argus-coverage-open class slides it in. The
+   width is generous enough to fit the longest tester+TC row without
+   wrapping but capped so it doesn't dominate large monitors. */
+.argus-coverage-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  width: min(720px, 92vw);
+  background: var(--argus-surface);
+  border-left: 1px solid var(--argus-border);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.18);
+  transform: translateX(100%);
+  transition: transform 0.22s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.argus-coverage-drawer.argus-coverage-open {
+  transform: translateX(0);
+}
+.argus-coverage-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px 20px;
+  border-bottom: 1px solid var(--argus-border);
+}
+.argus-coverage-drawer-header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.argus-coverage-close {
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 24px;
+  line-height: 1;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--argus-text-2);
+  border-radius: 6px;
+}
+.argus-coverage-close:hover {
+  background: var(--argus-bg);
+  color: var(--argus-text);
+}
+.argus-coverage-drawer-sub {
+  padding: 8px 20px 0 20px;
+  color: var(--argus-text-2);
+  font-size: 13px;
+}
+
+/* No-JS fallback — when JS is disabled, the drawer would otherwise
+   stay forever off-screen. This rule un-hides it and fixes the
+   trigger so the operator can still see everything. Activated when
+   the body lacks the `argus-coverage-js` class (set on page load by
+   _ARGUS_JS). */
+body:not(.argus-coverage-js) .argus-coverage-drawer {
+  position: static;
+  width: 100%;
+  transform: none;
+  border: 1px solid var(--argus-border);
+  margin: 16px;
+  box-shadow: none;
+}
+body:not(.argus-coverage-js) .argus-coverage-drawer[aria-hidden="true"] {
+  /* aria-hidden is the SSR'd default; without JS we ignore it. */
+  display: flex;
+}
+body:not(.argus-coverage-js) .argus-coverage-trigger { display: none; }
+body:not(.argus-coverage-js) .argus-coverage-backdrop { display: none; }
+
+/* Coverage tab strip — three buttons that switch which R15 panel is
+   visible. Pure CSS; the JS in `_ARGUS_JS` toggles aria-selected and
+   the [hidden] attribute on panels. Inactive panels stay in the DOM
+   so screen-readers can still navigate via the aria-controls
+   relationship; CSS [hidden] removes them visually. */
+.argus-coverage-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 12px 20px 0 20px;
+  border-bottom: 1px solid var(--argus-border);
+  flex-shrink: 0;
+}
+.argus-coverage-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--argus-text-2);
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: -1px;  /* overlap the bottom border so active tab merges */
+}
+.argus-coverage-tab:hover {
+  background: var(--argus-bg);
+  color: var(--argus-text);
+}
+.argus-coverage-tab[aria-selected="true"] {
+  background: var(--argus-surface);
+  border-color: var(--argus-border);
+  color: var(--argus-text);
+  font-weight: 600;
+}
+.argus-coverage-tab:focus-visible {
+  outline: 2px solid var(--argus-blue);
+  outline-offset: 2px;
+}
+.argus-coverage-panel {
+  padding: 12px 20px 20px 20px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+.argus-coverage-panel[hidden] { display: none; }
+.argus-noevd-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--argus-fail-fg);
+  font-size: 22px;
+  line-height: 22px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.argus-noevd-close:hover {
+  background: var(--argus-fail-fg);
+  color: #fff;
+  border-color: var(--argus-fail-fg);
+}
+.argus-noevd-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.argus-noevd-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--argus-fail-fg);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.argus-noevd-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--argus-fail-fg);
+}
+.argus-noevd-sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--argus-text);
+}
+.argus-noevd-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.argus-noevd-list li {
+  font-size: 13px;
+  line-height: 1.6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.argus-noevd-tester {
+  font-weight: 600;
+  color: var(--argus-text);
+}
+.argus-noevd-count {
+  color: var(--argus-text-2);
+  font-size: 12px;
+}
+.argus-noevd-key {
+  background: #fff;
+  border: 1px solid var(--argus-fail-fg);
+  color: var(--argus-fail-fg);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  cursor: pointer;
+  font-weight: 500;
+}
+.argus-noevd-key:hover {
+  background: var(--argus-fail-fg);
+  color: #fff;
+}
+.argus-noevd-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  background: var(--argus-fail-fg);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+tr.argus-row-noevd {
+  background: var(--argus-fail-bg) !important;
+}
+tr.argus-row-noevd > td:first-child {
+  border-left: 3px solid var(--argus-fail-fg);
+}
+/* Synthetic Not Applicable audits — same shape as no-evidence pill,
+   different colour so operators can distinguish at a glance. Amber
+   instead of red because N/A is "review the determination" not
+   "execution didn't happen at all". */
+.argus-na-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  background: #d97706;  /* amber-600 */
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+/* --- Per-tester compliance panel ---------------------------------------- */
+.argus-tester-panel {
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.argus-tester-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.argus-tester-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--argus-text);
+}
+.argus-tester-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.argus-tester-table thead { background: transparent; }
+.argus-tester-table th {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--argus-text-2);
+  border-bottom: 1px solid var(--argus-border);
+}
+.argus-tester-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--argus-border);
+  vertical-align: top;
+}
+.argus-tester-table tbody tr:last-child td { border-bottom: none; }
+.argus-tester-table tbody tr:hover td { background: #f8f8f8; }
+.argus-tester-link {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  color: var(--argus-blue);
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.argus-tester-link:hover {
+  text-decoration: underline;
+  color: var(--argus-blue-h);
+}
+.argus-mini-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.argus-mini-pass     { background: var(--argus-pass-bg); color: var(--argus-pass-fg); }
+.argus-mini-concerns { background: var(--argus-concerns-bg); color: var(--argus-concerns-fg); }
+.argus-mini-fail     { background: var(--argus-fail-bg); color: var(--argus-fail-fg); }
+.argus-verdict-mini { white-space: nowrap; }
+.argus-issue-chip {
+  display: inline-block;
+  background: #f0f0f3;
+  color: var(--argus-text);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  margin-right: 4px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  /* Render as a clickable button. Reset default <button> chrome so
+     existing visual matches the previous <span> exactly when idle. */
+  font-family: inherit;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 100ms ease, border-color 100ms ease;
+}
+.argus-issue-chip:hover {
+  background: #e0e8f5;
+  border-color: var(--argus-blue);
+}
+.argus-issue-chip:focus-visible {
+  outline: 2px solid var(--argus-blue);
+  outline-offset: 1px;
+}
+.argus-issue-chip.argus-issue-chip-active {
+  background: var(--argus-blue);
+  color: #fff;
+  border-color: var(--argus-blue);
+}
+.argus-issue-chip.argus-issue-chip-active .argus-issue-count {
+  background: rgba(255,255,255,.25);
+  color: #fff;
+}
+.argus-issue-count {
+  display: inline-block;
+  background: rgba(0,0,0,.08);
+  color: var(--argus-text);
+  padding: 0 6px;
+  border-radius: 6px;
+  margin-left: 4px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.argus-no-issues {
+  color: var(--argus-pass-fg);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Unaudited executions surfaced as rows in the main audits table.
+   Subtle left-border + muted tint so they read as "executed but not yet
+   audited" without competing with real Pass/Fail audit rows. */
+.argus-row-unaudited td {
+  background: #fcfcfa;
+}
+.argus-row-unaudited td:first-child {
+  box-shadow: inset 3px 0 0 var(--argus-sev-medium);
+}
+.argus-row-unaudited:hover td { background: #f5f5f0; }
+.argus-unaudited-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  background: #efe3c7;
+  color: var(--argus-sev-medium);
+}
+.argus-verdict-unaudited {
+  background: #efe3c7;
+  color: var(--argus-sev-medium);
+}
+
+/* Clickable execution key (-E) → opens the test-management Test Player view. */
+.argus-key-link {
+  color: var(--argus-blue);
+  text-decoration: none;
+}
+.argus-key-link:hover {
+  color: var(--argus-blue-h);
+  text-decoration: underline;
+}
+
+/* Fallback screenshot reveal — for findings with no specific page/step
+   but where the execution has screenshots. Collapsed by default. */
+.argus-thumb-fallback > summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--argus-blue);
+  user-select: none;
+}
+.argus-thumb-fallback > summary:hover { text-decoration: underline; }
+.argus-thumb-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Execution-status pills (color-coded per operator spec). */
+.argus-status-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+/* Status pill colors mirror test-management's own status palette (project 12804)
+   so the pills match what testers see in Tracker. */
+.argus-status-pass         { background: #3abb4b; color: #fff; }   /* green */
+.argus-status-fail         { background: #df2f36; color: #fff; }   /* red */
+.argus-status-pwi          { background: #79F2C0; color: #14532d; }/* teal */
+.argus-status-blocked      { background: #4b88e7; color: #fff; }   /* blue */
+.argus-status-inprogress   { background: #f0ad4e; color: #4a2e00; }/* amber */
+.argus-status-retest       { background: #FF8F73; color: #5a1e00; }/* coral */
+.argus-status-notexecuted  { background: #cfcfc4; color: #44443a; }/* grey */
+.argus-status-inactive     { background: #998DD9; color: #fff; }   /* purple */
+.argus-status-na           { background: #8993A4; color: #fff; }   /* slate */
+.argus-status-neutral      { background: #e9ebed; color: var(--argus-text-2); }
+
+/* ==========================================================================
+   ARGUS — body redesign (Bloomberg-terminal aesthetic).
+   Appended overrides only. Markup is unchanged; this block tightens
+   density, sharpens semantic color, and routes numerals through mono.
+   To revert: delete from this banner to end of file.
+   --------------------------------------------------------------------------
+   Design rules followed:
+     · Hierarchy via type weight + uppercase mono caps, not boxes / shadows.
+     · 4 / 6 / 8 / 12 px vertical rhythm. No padding > 16px in operator zones.
+     · Hairline 1px dividers; no rounded corners > 4px on dense surfaces.
+     · Saturated reds / ambers / greens for status; everything else muted.
+     · Numbers are monospace + tabular-nums everywhere they appear.
+     · One subtle scan-line atmosphere on the noevd ribbon — no other motion.
+   ========================================================================== */
+
+:root {
+  /* Operator-grade mono stack. The ui-monospace alias picks the
+     platform's best monospace (SFMono on macOS, Cascadia/Consolas
+     on Windows, Monaco/Liberation Mono on Linux/Cloud Desktop).
+     No external font loaded. */
+  --argus-mono: ui-monospace, SFMono-Regular, "SF Mono",
+                "Cascadia Mono", "Liberation Mono", Menlo, Consolas, monospace;
+  /* Sharpened semantic palette. The original pastels (pass-bg #d4edda
+     etc.) survive untouched for backwards-compat — these are the
+     loud-when-they-need-to-be variants for badges/pills/rails. */
+  --argus-ink: #0b1220;
+  --argus-ink-2: #2b3340;
+  --argus-rule: #e0e3e7;
+  --argus-rule-2: #d4d8dc;
+  --argus-row: #ffffff;
+  --argus-row-alt: #fbfcfd;
+  --argus-row-hover: #f3f5f7;
+  --argus-pass-strong: #1a7f37;
+  --argus-pass-tint: #e6f4ea;
+  --argus-concerns-strong: #b95000;
+  --argus-concerns-tint: #fef3e2;
+  --argus-fail-strong: #b42318;
+  --argus-fail-tint: #fdecea;
+  --argus-grid: rgba(11, 18, 32, 0.04);
+}
+
+/* --------------------------------------------------------------------------
+   Body atmosphere — terminal grid, very subtle.
+   -------------------------------------------------------------------------- */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  background:
+    linear-gradient(var(--argus-grid) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, var(--argus-grid) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--argus-bg);
+  color: var(--argus-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Main column — tighter, wider rail.
+   -------------------------------------------------------------------------- */
+.argus-main {
+  max-width: 1340px;
+  padding: 18px 24px 64px;
+}
+
+/* --------------------------------------------------------------------------
+   1. Stat strip — Bloomberg ticker.
+      Fixed-width cards, big mono number, semantic accent line at the
+      bottom of each card (compliant=green, concerns=amber,
+      deviation=red, flagged=neutral). Audits has no accent — it's
+      the denominator.
+   -------------------------------------------------------------------------- */
+.argus-stats {
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 0;
+  margin-bottom: 18px;
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.argus-stat {
+  background: var(--argus-surface);
+  border: 0;
+  border-right: 1px solid var(--argus-rule);
+  border-radius: 0;
+  padding: 12px 16px 14px;
+  position: relative;
+  transition: background 100ms ease;
+}
+.argus-stat:last-child { border-right: 0; }
+.argus-stat:hover {
+  background: var(--argus-row-hover);
+  border-color: transparent;
+  border-right: 1px solid var(--argus-rule);
+  transform: none;
+}
+.argus-stat:last-child:hover { border-right: 0; }
+.argus-stat::after {
+  /* Accent line: the heartbeat of the terminal. 0 height by default,
+     2px when the stat carries semantic meaning. */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  background: var(--argus-text-2);
+}
+.argus-stat[data-stat-value="pass"]::after { height: 2px; background: var(--argus-pass-strong); }
+.argus-stat[data-stat-value="concerns"]::after { height: 2px; background: var(--argus-concerns-strong); }
+.argus-stat[data-stat-value="fail"]::after { height: 2px; background: var(--argus-fail-strong); }
+.argus-stat[data-stat-action="flagged"]::after { height: 2px; background: var(--argus-text-2); }
+.argus-stat[data-stat-action="divergent"]::after { height: 2px; background: var(--argus-blue); }
+/* Divergent tile is informational — no filter shortcut. Hint at
+   that: default cursor, no hover lift. The tooltip carries the
+   meaning ("tester said Pass; ARGUS flagged"). */
+.argus-stat[data-stat-action="divergent"] { cursor: default; }
+.argus-stat[data-stat-action="divergent"]:hover { background: var(--argus-surface); }
+/* Percentage suffix on the divergent count — small, muted, mono. */
+.argus-stat-pct {
+  font-family: var(--argus-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--argus-text-2);
+  letter-spacing: 0;
+}
+.argus-stat.argus-stat-active {
+  background: #f0f6ff;
+  box-shadow: none;
+  border-color: transparent;
+  border-right: 1px solid var(--argus-rule);
+}
+.argus-stat.argus-stat-active::after { height: 3px; }
+.argus-stat-label {
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--argus-text-2);
+}
+.argus-stat-value {
+  font-family: var(--argus-mono);
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+  line-height: 1;
+  color: var(--argus-ink);
+  letter-spacing: -0.5px;
+}
+.argus-stat-value.argus-stat-pass { color: var(--argus-pass-strong); }
+.argus-stat-value.argus-stat-concerns { color: var(--argus-concerns-strong); }
+.argus-stat-value.argus-stat-fail { color: var(--argus-fail-strong); }
+
+/* --------------------------------------------------------------------------
+   2. No-evidence ribbon — operator-grade alert.
+      Red scan-line background, monospace key list, dismiss target sized
+      for a confident click. Keys group under each tester's name.
+   -------------------------------------------------------------------------- */
+.argus-noevd-panel {
+  background: var(--argus-fail-tint);
+  border: 1px solid var(--argus-fail-strong);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 14px 44px 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.argus-noevd-panel::before {
+  /* Diagonal hatch — pure CSS, no asset. Very subtle (8% opacity at
+     the strongest stop) — gives the panel an "active alert" texture
+     without flashing. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(180, 35, 24, 0.05) 0 8px,
+      transparent 8px 16px
+    );
+  pointer-events: none;
+}
+.argus-noevd-panel > * { position: relative; }
+.argus-noevd-icon {
+  background: var(--argus-fail-strong);
+  width: 22px; height: 22px;
+  font-size: 13px;
+  font-family: var(--argus-mono);
+  border-radius: 2px;
+  margin-top: 1px;
+}
+.argus-noevd-header h2 {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+  color: var(--argus-fail-strong);
+}
+.argus-noevd-sub {
+  font-size: 12px;
+  color: var(--argus-ink-2);
+  line-height: 1.55;
+}
+.argus-noevd-list { gap: 6px; }
+.argus-noevd-list li {
+  font-size: 12px;
+  padding: 5px 0;
+  border-bottom: 1px dashed rgba(180, 35, 24, 0.2);
+  gap: 8px;
+}
+.argus-noevd-list li:last-child { border-bottom: 0; }
+.argus-noevd-tester {
+  font-family: var(--argus-mono);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  color: var(--argus-fail-strong);
+  text-transform: uppercase;
+  min-width: 140px;
+}
+.argus-noevd-count {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--argus-text-2);
+  letter-spacing: 0.4px;
+}
+.argus-noevd-key {
+  background: var(--argus-surface);
+  border: 1px solid rgba(180, 35, 24, 0.4);
+  color: var(--argus-fail-strong);
+  border-radius: 2px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--argus-mono);
+  letter-spacing: 0.2px;
+  transition: background 80ms ease, color 80ms ease;
+}
+.argus-noevd-key:hover {
+  background: var(--argus-fail-strong);
+  color: var(--argus-surface);
+}
+.argus-noevd-close {
+  width: 22px;
+  height: 22px;
+  font-size: 18px;
+  border-radius: 2px;
+  top: 12px;
+  right: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Tester panel — leaderboard / scoreboard.
+      Each row gets a horizontal bar showing the compliance ratio.
+      Bar color follows the dominant verdict; numerics are mono.
+   -------------------------------------------------------------------------- */
+.argus-tester-panel {
+  border-radius: 4px;
+  padding: 0;
+  overflow: hidden;
+}
+.argus-tester-header {
+  padding: 10px 16px;
+  margin-bottom: 0;
+  background: var(--argus-row-alt);
+  border-bottom: 1px solid var(--argus-rule);
+}
+.argus-tester-header h2 {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+  color: var(--argus-ink-2);
+}
+.argus-tester-table { font-size: 12px; }
+.argus-tester-table th {
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  font-weight: 600;
+  padding: 8px 14px;
+  color: var(--argus-text-2);
+  background: transparent;
+  border-bottom: 1px solid var(--argus-rule);
+}
+.argus-tester-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--argus-rule);
+  font-size: 12px;
+  vertical-align: middle;
+}
+.argus-tester-table tbody tr:hover td { background: var(--argus-row-hover); }
+.argus-tester-link {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--argus-ink);
+  letter-spacing: -0.1px;
+}
+.argus-tester-link:hover {
+  color: var(--argus-blue);
+  text-decoration: none;
+}
+.argus-action-panel,
+.argus-legacy-panel {
+  margin-bottom: 14px;
+  border: 1px solid var(--argus-rule);
+  background: var(--argus-surface);
+}
+.argus-legacy-panel {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--argus-ink-2);
+  border-left: 3px solid var(--argus-concerns-strong);
+}
+.argus-action-panel {
+  padding: 12px 14px;
+}
+.argus-action-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.argus-action-header h2 {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+  color: var(--argus-ink-2);
+  text-transform: uppercase;
+}
+.argus-action-header p {
+  margin: 0;
+  color: var(--argus-text-2);
+  font-size: 12px;
+}
+.argus-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.argus-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid var(--argus-rule);
+  background: var(--argus-row-alt);
+  color: var(--argus-ink);
+  padding: 8px 10px;
+  text-align: left;
+}
+.argus-action-card:hover,
+.argus-action-chip-btn:hover {
+  border-color: var(--argus-blue);
+  background: var(--argus-row-hover);
+}
+.argus-action-active {
+  border-color: var(--argus-blue);
+  box-shadow: inset 2px 0 0 var(--argus-blue);
+}
+.argus-action-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.argus-action-count {
+  font-family: var(--argus-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--argus-ink);
+}
+.argus-action-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.argus-action-chip,
+.argus-action-chip-btn {
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  border: 1px solid var(--argus-rule);
+  background: transparent;
+  color: var(--argus-ink-2);
+  padding: 2px 6px;
+}
+.argus-action-chip-btn {
+  cursor: pointer;
+}
+/* Tester rows: numerics in mono+tabular so columns line up clean. */
+.argus-tester-table td:not(:first-child) {
+  font-family: var(--argus-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.argus-mini-pill {
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-left: 4px;
+}
+.argus-mini-pass {
+  background: transparent;
+  color: var(--argus-pass-strong);
+  border: 1px solid currentColor;
+  padding: 0 5px;
+}
+.argus-mini-concerns {
+  background: transparent;
+  color: var(--argus-concerns-strong);
+  border: 1px solid currentColor;
+  padding: 0 5px;
+}
+.argus-mini-fail {
+  background: var(--argus-fail-strong);
+  color: var(--argus-surface);
+}
+
+/* --------------------------------------------------------------------------
+   4. Filter bar — CLI prompt feel.
+      Smaller inputs. Border darkens on focus, no glow ring. Monospace
+      placeholder. Live count right-aligned in mono.
+   -------------------------------------------------------------------------- */
+.argus-filters {
+  gap: 8px;
+  padding: 10px 0 8px 0;
+  margin-bottom: 8px;
+  background: var(--argus-bg);
+  border-bottom: 1px solid var(--argus-rule);
+  box-shadow: none;
+}
+.argus-filters.argus-filters-active {
+  background: linear-gradient(to bottom, #f0f7ff 0%, var(--argus-bg) 100%);
+  border-bottom-color: var(--argus-blue);
+}
+.argus-input, .argus-select {
+  font-family: var(--argus-mono);
+  font-size: 12px;
+  padding: 5px 9px;
+  border: 1px solid var(--argus-rule-2);
+  border-radius: 2px;
+  background: var(--argus-surface);
+  color: var(--argus-ink);
+  letter-spacing: 0.1px;
+  transition: border-color 80ms ease;
+}
+.argus-input { min-width: 280px; }
+.argus-input::placeholder { color: var(--argus-text-2); opacity: 0.7; }
+.argus-input:focus, .argus-select:focus {
+  outline: none;
+  border-color: var(--argus-ink);
+  background: var(--argus-surface);
+}
+.argus-input:focus { box-shadow: inset 2px 0 0 0 var(--argus-blue); }
+.argus-select { padding-right: 24px; }
+.argus-toggle {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--argus-ink-2);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.argus-toggle input[type="checkbox"] {
+  accent-color: var(--argus-blue);
+  width: 13px; height: 13px;
+}
+.argus-btn-clear {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border: 1px solid var(--argus-rule-2);
+  border-radius: 2px;
+  background: var(--argus-surface);
+  color: var(--argus-ink-2);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  transition: border-color 80ms, background 80ms;
+}
+.argus-btn-clear:hover {
+  border-color: var(--argus-ink);
+  background: var(--argus-row-hover);
+}
+.argus-count {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--argus-text-2);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   5. Audit table — the workhorse.
+      Tighter cells, mono keys, two-line testrun/test-case stack, single
+      letter severity pills (H/M/L), unicode chevron for expand state.
+   -------------------------------------------------------------------------- */
+.argus-table {
+  border-radius: 4px;
+  overflow: visible;  /* let row-detail rows expand without clipping */
+  font-size: 13px;
+}
+.argus-table thead {
+  background: var(--argus-row-alt);
+}
+.argus-table th {
+  padding: 8px 12px;
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: var(--argus-ink-2);
+  border-bottom: 1px solid var(--argus-rule-2);
+}
+.argus-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--argus-rule);
+  vertical-align: middle;
+}
+/* Subtle zebra at hover only — full zebra fights the freshness cue
+   from the no-evidence ribbon. */
+.argus-row { transition: background 80ms ease; }
+.argus-row:hover td,
+.argus-row:focus-within td { background: var(--argus-row-hover); }
+.argus-row td:first-child {
+  border-left: 2px solid transparent;
+  transition: border-color 80ms ease;
+}
+.argus-row:hover td:first-child { border-left-color: var(--argus-blue); }
+
+.argus-key {
+  font-family: var(--argus-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  color: var(--argus-ink);
+  white-space: nowrap;
+}
+
+/* Verdict badge — mono caps, sharp corners, hairline border (not pastel fill) */
+.argus-badge {
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+.argus-verdict-pass {
+  background: transparent;
+  color: var(--argus-pass-strong);
+}
+.argus-verdict-concerns {
+  background: transparent;
+  color: var(--argus-concerns-strong);
+}
+.argus-verdict-fail {
+  background: var(--argus-fail-strong);
+  color: var(--argus-surface);
+  border-color: var(--argus-fail-strong);
+}
+.argus-verdict-unknown {
+  color: var(--argus-text-2);
+  border-color: var(--argus-rule-2);
+  background: transparent;
+}
+
+/* Test run / test case two-line column */
+.argus-tc { color: var(--argus-text-2); font-size: 12px; }
+.argus-tc-run {
+  color: var(--argus-ink);
+  font-weight: 500;
+  font-size: 13px;
+  margin-bottom: 1px;
+  letter-spacing: -0.1px;
+}
+.argus-tc-name { font-size: 11px; color: var(--argus-text-2); }
+
+/* MP badge: keep it in mono, sharp corners */
+.argus-mp-badge {
+  background: var(--argus-ink);
+  color: var(--argus-surface);
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+/* Severity pills inside the row — H/M/L mono caps, sharp.
+   We CAN'T change the rendered text (renderer emits "X high" etc.) but
+   we CAN compress visual footprint. Hide the word, keep the count + a
+   single-letter prefix via a CSS pseudo-element trick.
+   The renderer outputs e.g. `<span class="argus-pill argus-pill-high">3</span>`
+   — number-only pills, so the mono+caps treatment is already correct. */
+.argus-pill {
+  font-family: var(--argus-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-left: 3px;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  text-transform: uppercase;
+}
+.argus-pill-high {
+  background: var(--argus-fail-strong);
+  color: var(--argus-surface);
+}
+.argus-pill-medium {
+  background: var(--argus-concerns-strong);
+  color: var(--argus-surface);
+}
+.argus-pill-low {
+  background: transparent;
+  color: var(--argus-text-2);
+  border: 1px solid var(--argus-rule-2);
+  padding: 0 4px;
+}
+.argus-finding-count {
+  font-family: var(--argus-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--argus-ink);
+  margin-right: 8px;
+}
+
+/* Bookmark star — quick fill animation, sharp pivot, no scale jiggle */
+.argus-bookmark {
+  font-size: 16px;
+  color: var(--argus-rule-2);
+  transition: color 120ms cubic-bezier(.2,.7,.3,1.4),
+              transform 120ms cubic-bezier(.2,.7,.3,1.4);
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.argus-bookmark:hover {
+  color: #f4b400;
+  transform: scale(1.1);
+}
+.argus-bookmark.argus-bookmarked {
+  color: #f4b400;
+  transform: scale(1);
+}
+.argus-bookmark.argus-bookmarked:hover {
+  transform: scale(1.1);
+}
+
+/* Detail-row chrome: pulled-in indent, tighter padding */
+.argus-detail-row td {
+  background: var(--argus-row-alt);
+  padding: 14px 18px 18px;
+  border-bottom: 1px solid var(--argus-rule);
+  border-left: 2px solid var(--argus-blue);
+}
+.argus-detail { gap: 10px; }
+
+/* Findings inside the detail row — sharper rails, smaller padding */
+.argus-finding {
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-rule);
+  border-left-width: 2px;
+  border-radius: 2px;
+  padding: 8px 12px;
+}
+.argus-finding-high   { border-left-color: var(--argus-fail-strong); }
+.argus-finding-medium { border-left-color: var(--argus-concerns-strong); }
+.argus-finding-low    { border-left-color: var(--argus-text-2); }
+.argus-finding-headline {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--argus-ink);
+  letter-spacing: -0.1px;
+}
+.argus-finding-loc {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.4px;
+  color: var(--argus-text-2);
+  text-transform: uppercase;
+}
+.argus-finding-body {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--argus-ink-2);
+  margin-top: 5px;
+}
+.argus-finding-triage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.argus-finding-triage .argus-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--argus-row-alt);
+  border: 1px solid var(--argus-rule);
+  color: var(--argus-ink-2);
+  border-radius: 2px;
+  padding: 2px 6px;
+  line-height: 1.4;
+}
+.argus-sev-dot {
+  width: 7px; height: 7px;
+  border-radius: 1px;  /* sharp square dots, more terminal-like */
+}
+.argus-sev-high   { background: var(--argus-fail-strong); }
+.argus-sev-medium { background: var(--argus-concerns-strong); }
+.argus-sev-low    { background: var(--argus-text-2); }
+
+/* --------------------------------------------------------------------------
+   6. Empty state — stylized eyes, matching the index page.
+   -------------------------------------------------------------------------- */
+.argus-empty {
+  background: var(--argus-surface);
+  border: 1px solid var(--argus-rule);
+  border-radius: 4px;
+  padding: 56px 24px 64px;
+  text-align: center;
+  position: relative;
+}
+.argus-empty::before {
+  content: "◉   ◎   ◉";
+  display: block;
+  font-family: var(--argus-mono);
+  font-size: 36px;
+  letter-spacing: 18px;
+  color: var(--argus-ink-2);
+  margin-bottom: 24px;
+  margin-left: 18px;  /* compensate for letter-spacing tail */
+}
+.argus-empty p {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--argus-text-2);
+  margin: 0;
+  font-weight: 500;
+}
+.argus-empty p + p {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  margin-top: 12px;
+  color: var(--argus-ink-2);
+}
+
+/* --------------------------------------------------------------------------
+   Issue chips — also picked up by the detail / per-finding views.
+   Tighter, sharper, mono numerals.
+   -------------------------------------------------------------------------- */
+.argus-issue-chip {
+  font-family: var(--argus-mono);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: var(--argus-row-hover);
+  border: 1px solid var(--argus-rule);
+  font-weight: 500;
+  text-transform: none;
+}
+.argus-issue-chip:hover {
+  background: var(--argus-surface);
+  border-color: var(--argus-blue);
+  color: var(--argus-blue);
+}
+.argus-issue-chip.argus-issue-chip-active {
+  background: var(--argus-ink);
+  border-color: var(--argus-ink);
+  color: var(--argus-surface);
+}
+.argus-issue-count {
+  background: rgba(0,0,0,.06);
+  font-family: var(--argus-mono);
+  font-variant-numeric: tabular-nums;
+  border-radius: 2px;
+  padding: 0 5px;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+}
+.argus-issue-chip.argus-issue-chip-active .argus-issue-count {
+  background: rgba(255,255,255,.16);
+}
+
+/* --------------------------------------------------------------------------
+   Sortable header indicators — mono caret matching the terminal feel.
+   -------------------------------------------------------------------------- */
+.argus-sortable:hover { background: var(--argus-row-hover); }
+.argus-sort-indicator {
+  font-family: var(--argus-mono);
+  font-size: 9px;
+  color: var(--argus-text-2);
+}
+.argus-sorted-asc .argus-sort-indicator::after  { content: "▲"; }
+.argus-sorted-desc .argus-sort-indicator::after { content: "▼"; }
+
+/* --------------------------------------------------------------------------
+   Density-respect at narrower widths.
+   At 1366px and below: shrink horizontal padding by another step,
+   collapse the stat strip to 5 columns of 110px.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1440px) {
+  .argus-main { padding: 16px 18px 56px; }
+  .argus-stats {
+    grid-template-columns: repeat(5, minmax(110px, 1fr));
+  }
+  .argus-input { min-width: 220px; }
+  .argus-table th, .argus-table td { padding: 7px 10px; }
+}

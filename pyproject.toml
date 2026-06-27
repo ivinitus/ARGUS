@@ -1,0 +1,59 @@
+[project]
+name = "argus-qa"
+version = "0.1.0"
+description = "Local audit and reporting dashboard for manual QA evidence"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "boto3==1.42.96",
+    "pymupdf==1.24.14",
+    "requests==2.33.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.0.3",
+]
+
+[project.scripts]
+argus-run = "argus:main"
+argus-report = "report:main"
+argus-serve = "argus_serve:main"
+argus-replay = "replay:main"
+argus-bench = "bench:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = [
+    "argus",
+    "argus_control",
+    "argus_serve",
+    "auditor",
+    "auditor_chunking",
+    "auditor_prompts",
+    "auditor_render",
+    "backfill_users",
+    "batch",
+    "bench",
+    "config",
+    "coverage",
+    "env_check",
+    "env_check_backfill",
+    "env_check_haiku",
+    "extractor",
+    "history_index",
+    "notify",
+    "progress",
+    "replay",
+    "report",
+    "users",
+    "validate_v5_modes",
+    "workflow_rules",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
