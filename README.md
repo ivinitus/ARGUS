@@ -1,49 +1,42 @@
 # ARGUS
 
-ARGUS is a local audit and reporting tool for manual QA evidence. It reads
-test-execution metadata, screenshots, and model-produced `audit.json` files,
-then generates a static HTML dashboard for triage, tester rollups, finding
-categories, and follow-up actions.
-
-The repository is intentionally local-first: reports are generated from files
-on disk, tests run without network access, and real tracker/model credentials
-stay outside the repo.
+ARGUS audits manual QA evidence and builds a static review dashboard. It works
+from files on disk: extracted metadata, screenshots, and `audit.json` results.
 
 ## Screenshots
 
-The screenshots below use sanitized demo data.
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="ARGUS dashboard" width="900">
+</p>
 
-![ARGUS dashboard](docs/screenshots/dashboard.png)
+<details>
+<summary>Mobile layout</summary>
 
-![ARGUS mobile layout](docs/screenshots/mobile.png)
+<p align="center">
+  <img src="docs/screenshots/mobile.png" alt="ARGUS mobile layout" width="320">
+</p>
 
-## What It Does
+</details>
 
-* Aggregates `audit.json` files into a static, filterable HTML report.
-* Groups findings by severity, tester, source, category, and next action.
-* Flags tester-status disagreements, missing evidence, environment issues, and
-  deterministic workflow-rule violations.
-* Preserves local-first operation: report generation works from existing audit
-  files without calling a tracker or model provider.
-* Includes unit and integration tests for the report, rules, replay, extractor,
-  and audit orchestration paths.
+## Features
 
-## Quick Start With uv
+* Static HTML and Markdown reports
+* Per-tester rollups
+* Finding filters by severity, action, category, and source
+* Deterministic workflow checks
+* Model-provider adapters for OpenAI, Anthropic, Google Gemini, and Bedrock
+* Local test suite with mocked external clients
 
-ARGUS includes `pyproject.toml` for `uv`.
+## Install
+
+Using `uv`:
 
 ```bash
 scripts/bootstrap.sh
 scripts/test.sh
 ```
 
-`bootstrap.sh` creates `.env.argus`, writes `config.toml` from those variables,
-and runs `uv sync --dev`.
-
-If you do not have `uv` installed yet, install it from the official uv docs,
-then re-run `scripts/bootstrap.sh`.
-
-## pip Fallback
+Without `uv`:
 
 ```bash
 python3 -m venv .venv
@@ -52,12 +45,9 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest -q
 ```
 
-Both paths verify the local code without calling a live tracker or model
-provider.
+## Configure
 
-## Shell Configuration
-
-Copy and edit the environment template:
+Copy the environment template and edit it for your tracker/model setup:
 
 ```bash
 cp scripts/env.example.sh .env.argus
@@ -65,112 +55,88 @@ $EDITOR .env.argus
 scripts/bootstrap.sh
 ```
 
-The important variables are:
+Useful variables:
 
-* `ARGUS_TRACKER_BASE_URL`
-* `ARGUS_PROJECT_ID`
-* `ARGUS_OUTPUT_DIR`
-* `ARGUS_MODEL_PROVIDER` (`openai`, `anthropic`, `google`, or `bedrock`)
-* `ARGUS_MODEL_ID`
-* `ARGUS_MODEL_REGION`
-* `ARGUS_CLOUD_PROFILE`
-* `ARGUS_API_BASE_URL`
-* `ARGUS_API_KEY_ENV`
-* `ARGUS_ENV_CHECK_ENGINE`
-* `ARGUS_BATCH_CONCURRENCY`
-* `ARGUS_EXTRACTOR_CONCURRENCY`
+```bash
+ARGUS_TRACKER_BASE_URL=
+ARGUS_PROJECT_ID=
+ARGUS_OUTPUT_DIR=./output
+ARGUS_MODEL_PROVIDER=openai
+ARGUS_MODEL_ID=
+ARGUS_API_KEY_ENV=OPENAI_API_KEY
+ARGUS_ENV_CHECK_ENGINE=off
+```
 
 `.env.argus` and `config.toml` are ignored by git.
 
+## Model Providers
+
+| Provider | `ARGUS_MODEL_PROVIDER` | Default key env |
+| --- | --- | --- |
+| OpenAI | `openai` | `OPENAI_API_KEY` |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` |
+| Google Gemini | `google` | `GOOGLE_API_KEY` |
+| Bedrock-compatible runtime | `bedrock` | uses `region` / `cloud_profile` |
+
+Set `ARGUS_API_BASE_URL` only when using a compatible gateway instead of the
+provider default.
+
 ## Generate A Report
 
-ARGUS expects an output tree containing execution folders with `audit.json` and
-`metadata.json` files.
+ARGUS scans an output tree for execution folders containing `audit.json` and
+`metadata.json`.
 
 ```bash
 scripts/report.sh
 ```
 
-This writes:
+Outputs:
 
-* `$ARGUS_OUTPUT_DIR/_argus.html`
-* a timestamped `_argus_*.html` archive
-* a timestamped `_report_*.md` summary, unless disabled with
-  `--no-markdown`
+```text
+$ARGUS_OUTPUT_DIR/_argus.html
+$ARGUS_OUTPUT_DIR/_argus_<timestamp>.html
+$ARGUS_OUTPUT_DIR/_report_<timestamp>.md
+```
 
-Open `_argus.html` in a browser to use the dashboard.
+Open `_argus.html` in a browser.
 
-## Run A Full Audit
+## Run An Audit
+
+After configuring your tracker and model provider:
 
 ```bash
 scripts/run-audit.sh --key QA-E123456
 ```
 
-Full extraction and model-based auditing require adapting `config.toml`,
-`extractor.py`, and the model client settings to your own issue tracker and
-model provider. The checked-in defaults are placeholders and keep
-`env_check_engine = "off"` so a fresh public clone does not call a private
-vision provider.
-
-## Model Providers
-
-Set `[auditor].model_provider` or `ARGUS_MODEL_PROVIDER` to one of:
-
-* `openai` - calls the OpenAI Chat Completions API. Set
-  `api_key_env = "OPENAI_API_KEY"`.
-* `anthropic` - calls the Anthropic Messages API. Set
-  `api_key_env = "ANTHROPIC_API_KEY"`.
-* `google` - calls the Gemini `generateContent` API. Set
-  `api_key_env = "GOOGLE_API_KEY"`.
-* `bedrock` - keeps the original Bedrock-compatible runtime path, using
-  `region` and `cloud_profile`.
-
-`api_base_url` is optional for compatible gateways. Leave it blank to use the
-provider default.
-
-## Configuration
-
-Manual setup still works:
+Common entry points:
 
 ```bash
-cp config.example.toml config.toml
+python argus.py --key QA-E123456
+python argus.py --folder "Regression Folder"
+python report.py --out-dir ./output/my-run --html
 ```
 
-Then set your local values:
+## Repository Layout
 
-* `[extractor].base_url`
-* `[extractor].project_id`
-* `[extractor].out_dir`
-* `[auditor].model_id`
-* `[auditor].model_provider`
-* `[auditor].api_key_env`
-* provider region/profile/base-url settings, if your adapter needs them
-* `[batch]` concurrency limits
-
-Keep `config.toml`, token files, generated reports, PDFs, screenshots, and
-local output data out of git. The included `.gitignore` covers those defaults.
-
-## Project Layout
-
-* `argus.py` - end-to-end runner for one execution or a folder.
-* `report.py` and `report_assets/` - static HTML and Markdown report
-  generation.
-* `auditor.py`, `auditor_chunking.py`, `auditor_prompts.py` - model audit
-  orchestration and prompt/schema handling.
-* `workflow_rules.py` and `coverage.py` - deterministic consistency checks.
-* `extractor.py` and `batch.py` - tracker ingestion and batch execution
-  helpers.
-* `tests/` - local test suite.
-
-## Public Repo Notes
-
-This copy uses generic placeholders for tracker URLs, project keys, model
-settings, cloud profiles, and product names. Before publishing your own fork,
-review any new local files with:
-
-```bash
-rg -n "secret|password|token|api[_-]?key|BEGIN .*PRIVATE KEY|AKIA|ASIA" .
+```text
+argus.py                 end-to-end runner
+extractor.py             tracker ingestion
+auditor.py               model audit orchestration
+workflow_rules.py        deterministic checks
+report.py                HTML/Markdown report generation
+report_assets/           dashboard CSS/JS
+tests/                   unit and integration tests
+scripts/                 setup and run helpers
 ```
 
-Do not commit real customer data, private screenshots, tracker exports,
-credentials, generated `output/` folders, or personal `config.toml` files.
+## Before Publishing Data
+
+Keep these out of commits:
+
+* `config.toml`
+* `.env.argus`
+* token/key files
+* generated `output/`
+* customer screenshots, PDFs, and tracker exports
+
+The included `.gitignore` covers the expected local files.
