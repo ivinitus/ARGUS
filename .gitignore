@@ -30,7 +30,7 @@ env/
 
 config.toml
 output/
-screenshots/
+/screenshots/
 *.pdf
 *.log
 bench_results.json

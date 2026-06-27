@@ -128,15 +128,3 @@ report_assets/           dashboard CSS/JS
 tests/                   unit and integration tests
 scripts/                 setup and run helpers
 ```
-
-## Before Publishing Data
-
-Keep these out of commits:
-
-* `config.toml`
-* `.env.argus`
-* token/key files
-* generated `output/`
-* customer screenshots, PDFs, and tracker exports
-
-The included `.gitignore` covers the expected local files.
