@@ -2,27 +2,26 @@
 
 # ARGUS
 
-**Audit manual QA evidence and turn it into a static, shareable review dashboard.**
+**AI-powered QA audit engine — runs LLMs inside your CI/CD pipeline to catch bugs humans miss.**
 
-ARGUS ingests QA execution evidence — extracted metadata, screenshots, and
-model audit results — and produces deterministic HTML and Markdown reports.
-No server, no database: everything works from files on disk.
+ARGUS plugs Claude, GPT-4, or Gemini into your test execution pipeline to automatically audit screenshots, test evidence, and execution metadata at scale. Built and battle-tested at Amazon, where it processes **5,000+ screenshots daily** in CI/CD, catching UI anomalies and logical defects before they reach production.
 
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-pytest-orange.svg)](tests/)
+[![Providers](https://img.shields.io/badge/providers-Claude%20%7C%20GPT--4%20%7C%20Gemini%20%7C%20Bedrock-purple.svg)](#model-providers)
 
 </div>
 
 ---
 
-## Overview
+## Why I built this
 
-ARGUS scans an output tree for execution folders containing `audit.json` and
-`metadata.json`, then renders a review dashboard plus a Markdown summary. It
-combines **model-based auditing** (OpenAI, Anthropic, Google Gemini, or
-Bedrock) with **deterministic workflow checks**, so findings are reproducible
-and reviewable without re-running the model.
+Manual QA review at scale is a lie. When your CI/CD pipeline generates thousands of screenshots per day, no human team reviews them all — things slip through. The existing visual regression tools (pixel diffing, snapshot testing) catch *changes* but not *correctness*: they can't tell you that a button label is wrong, a price is missing, or a layout makes no logical sense.
+
+I built ARGUS at Amazon to fix this. It feeds QA execution evidence directly to an LLM (Claude in our case), which audits each screenshot and execution for semantic correctness — not just pixel differences. The findings land in a static HTML dashboard that any engineer can open in a browser, no server required.
+
+**The result: 5,000+ daily screenshot audits running continuously in CI/CD, surfacing critical anomalies before production.**
 
 <p align="center">
   <img src="docs/screenshots/dashboard.png" alt="ARGUS dashboard" width="900">
@@ -37,27 +36,18 @@ and reviewable without re-running the model.
 
 </details>
 
-## Contents
+---
 
-- [Features](#features)
-- [Quickstart](#quickstart)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Model Providers](#model-providers)
-- [Usage](#usage)
-- [How It Works](#how-it-works)
-- [Repository Layout](#repository-layout)
-- [Development](#development)
-- [License](#license)
+## What ARGUS does
 
-## Features
+- **Feeds screenshots + test metadata to an LLM** — Claude, GPT-4, Gemini, or any Bedrock-compatible model
+- **Audits for semantic correctness** — catches wrong labels, missing elements, broken layouts, logical bugs that pixel-diff misses
+- **Runs deterministic rule checks in parallel** — workflow validation that doesn't need a model call
+- **Produces static HTML + Markdown reports** — no server, no database, open the file in a browser
+- **Aggregates per-tester coverage** — see who tested what, what was missed, where the gaps are
+- **Works offline** — all audit results are cached as JSON; rerun reports without re-calling the model
 
-- **Static reports** — self-contained HTML dashboard and Markdown summary; no runtime services required.
-- **Per-tester rollups** — aggregate findings and coverage by tester.
-- **Rich filtering** — slice findings by severity, action, category, and source.
-- **Deterministic checks** — rule-based workflow validation that runs independently of the model.
-- **Pluggable providers** — adapters for OpenAI, Anthropic, Google Gemini, and Bedrock-compatible runtimes.
-- **Tested** — a local `pytest` suite with mocked external clients.
+---
 
 ## Quickstart
 
@@ -70,9 +60,11 @@ scripts/report.sh             # render a report from existing audit files
 
 Open `$ARGUS_OUTPUT_DIR/_argus.html` in a browser.
 
+---
+
 ## Installation
 
-> **Requirements:** Python 3.11+.
+> **Requirements:** Python 3.11+
 
 **Using [`uv`](https://github.com/astral-sh/uv) (recommended):**
 
@@ -90,9 +82,9 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest -q
 ```
 
-## Configuration
+---
 
-Copy the environment template and edit it for your tracker and model setup:
+## Configuration
 
 ```bash
 cp scripts/env.example.sh .env.argus
@@ -100,117 +92,129 @@ $EDITOR .env.argus
 scripts/bootstrap.sh          # writes config.toml from .env.argus
 ```
 
-Commonly used variables:
-
 | Variable | Purpose |
-| --- | --- |
+|----------|---------|
 | `ARGUS_TRACKER_BASE_URL` | Base URL of your issue/test tracker |
 | `ARGUS_PROJECT_ID` | Tracker project identifier |
 | `ARGUS_OUTPUT_DIR` | Where reports and audit evidence live (default `./output`) |
 | `ARGUS_MODEL_PROVIDER` | `openai`, `anthropic`, `google`, or `bedrock` |
-| `ARGUS_MODEL_ID` | Provider-specific model identifier |
+| `ARGUS_MODEL_ID` | Provider-specific model identifier (e.g. `claude-sonnet-4-5`) |
 | `ARGUS_API_KEY_ENV` | Name of the env var holding the API key |
 | `ARGUS_ENV_CHECK_ENGINE` | Environment-validation engine (`off` by default) |
 
-Set `ARGUS_API_BASE_URL` only when routing through a compatible gateway
-instead of the provider default.
+Set `ARGUS_API_BASE_URL` only when routing through a gateway instead of the provider default.
 
 > [!NOTE]
-> `.env.argus` and `config.toml` are git-ignored. Keep real credentials in
-> environment variables or ignored files — never commit them.
+> `.env.argus` and `config.toml` are git-ignored. Never commit credentials.
+
+---
 
 ## Model Providers
 
 | Provider | `ARGUS_MODEL_PROVIDER` | Default key env |
-| --- | --- | --- |
-| OpenAI | `openai` | `OPENAI_API_KEY` |
-| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` |
+|----------|----------------------|-----------------|
+| Anthropic (Claude) | `anthropic` | `ANTHROPIC_API_KEY` |
+| OpenAI (GPT-4o, etc.) | `openai` | `OPENAI_API_KEY` |
 | Google Gemini | `google` | `GOOGLE_API_KEY` |
-| Bedrock-compatible runtime | `bedrock` | uses `region` / `cloud_profile` |
+| AWS Bedrock | `bedrock` | uses `region` / `cloud_profile` |
 
-For Bedrock, set `ARGUS_MODEL_REGION` and `ARGUS_CLOUD_PROFILE` instead of an
-API key.
+For Bedrock, set `ARGUS_MODEL_REGION` and `ARGUS_CLOUD_PROFILE` instead of an API key.
+
+---
 
 ## Usage
 
-### Generate a report
-
-ARGUS scans the output tree for execution folders with `audit.json` and
-`metadata.json`:
-
-```bash
-scripts/report.sh
-```
-
-This produces:
-
-```text
-$ARGUS_OUTPUT_DIR/_argus.html              # latest dashboard
-$ARGUS_OUTPUT_DIR/_argus_<timestamp>.html  # timestamped snapshot
-$ARGUS_OUTPUT_DIR/_report_<timestamp>.md   # Markdown summary
-```
-
-### Run an audit
-
-After configuring your tracker and model provider:
+### Audit a single test execution
 
 ```bash
 scripts/run-audit.sh --key QA-E123456
 ```
 
-### Direct entry points
+### Audit an entire sprint folder
 
 ```bash
-python argus.py --key QA-E123456            # extract + audit a single execution
-python argus.py --folder "Sprint 47 Regression"   # audit a whole tracker folder
-python report.py --out-dir ./output/my-run --html # render a report only
+python argus.py --folder "Sprint 47 Regression"
 ```
 
-Folder mode enumerates executed, not-yet-audited keys and runs the
-extract + audit pipeline on each in parallel; already-audited keys (those with
-an existing `audit.json`) are skipped. Concurrency is controlled by the
-`[batch]` section of `config.toml`.
+Folder mode processes all unaudited executions in parallel. Already-audited keys (those with an existing `audit.json`) are skipped — safe to re-run.
+
+### Generate / refresh the report
+
+```bash
+scripts/report.sh
+```
+
+Outputs:
+
+```
+$ARGUS_OUTPUT_DIR/_argus.html              # latest dashboard (open in browser)
+$ARGUS_OUTPUT_DIR/_argus_<timestamp>.html  # timestamped snapshot
+$ARGUS_OUTPUT_DIR/_report_<timestamp>.md   # Markdown summary
+```
+
+### Direct Python entry points
+
+```bash
+python argus.py --key QA-E123456                       # single execution
+python argus.py --folder "Sprint 47 Regression"        # whole folder
+python report.py --out-dir ./output/my-run --html      # report only
+```
+
+---
 
 ## How It Works
 
-```text
+```
   tracker / evidence            ARGUS pipeline                  outputs
   ──────────────────            ──────────────                  ───────
   test executions   ──▶  extractor   ─┐
-  screenshots                          ├─▶  auditor (model)  ─┐
+  screenshots                          ├─▶  auditor (LLM)   ─┐
   metadata                             │                      ├─▶  report  ──▶  HTML + Markdown
                                        └─▶  workflow_rules ───┘
                                             (deterministic)
 ```
 
-1. **Extract** — `extractor.py` pulls execution metadata and evidence from the tracker into the output tree.
-2. **Audit** — `auditor.py` orchestrates model calls; `workflow_rules.py` applies deterministic, rule-based checks.
-3. **Report** — `report.py` renders the dashboard and Markdown summary from the resulting `audit.json` files.
+1. **Extract** — `extractor.py` pulls execution metadata and screenshots from your tracker into a local output tree.
+2. **Audit** — `auditor.py` sends evidence to your chosen LLM; `workflow_rules.py` runs deterministic checks in parallel.
+3. **Report** — `report.py` renders the static dashboard from cached `audit.json` files — no model calls needed to re-render.
+
+---
 
 ## Repository Layout
 
-```text
+```
 argus.py                 end-to-end runner
 extractor.py             tracker ingestion
-auditor.py               model audit orchestration
+auditor.py               LLM audit orchestration
+auditor_prompts.py       prompt library
 workflow_rules.py        deterministic checks
 report.py                HTML/Markdown report generation
 report_assets/           dashboard CSS/JS
 scripts/                 setup and run helpers
-tests/                   unit and integration tests
+tests/                   unit and integration tests (mocked, runs offline)
 ```
 
-See [SETUP.md](SETUP.md) for a step-by-step setup walkthrough and the pip
-fallback path.
+See [SETUP.md](SETUP.md) for a step-by-step walkthrough.
+
+---
 
 ## Development
 
 ```bash
-scripts/test.sh           # run the suite via uv
-pytest -q                 # run the suite directly
+scripts/test.sh     # run the suite via uv
+pytest -q           # run directly
 ```
 
-Tests mock all external clients, so they run offline with no credentials.
+All external clients (LLM APIs, tracker) are mocked — the test suite runs fully offline with no credentials.
+
+---
+
+## Related projects
+
+- **[OmniHeal](https://github.com/ivinitus)** — self-healing test gateway using Go + MCP that automatically rewrites broken Playwright/Selenium locators using local LLM agents
+- **[zephyr-scale-mcp](https://github.com/ivinitus/zephyr-scale-mcp)** — MCP server for Zephyr Scale test management
+
+---
 
 ## License
 
