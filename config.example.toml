@@ -1,32 +1,43 @@
+# Copy to config.toml and set your Jira instance and project.
+[general]
+team_name = "My QA workspace"
+state_dir = "~/.argus"
+
 [extractor]
-base_url = "https://tracker.example.com"
+base_url = "https://jira.example.com"
+project_id = "10000"
 out_dir = "./output"
-project_id = "PROJECT"
+jira_pat_env = "ARGUS_JIRA_PAT"
+jira_pat_path = "~/.argus/jira.pat"
 
 [auditor]
-model_provider = "openai"
-model_id = "example-model"
-region = "example-region"
-cloud_profile = ""
-api_base_url = ""
-api_key_env = "OPENAI_API_KEY"
-temperature = 0.0
-consensus_enabled = false
-chunk_max_parallel = 2
-env_check_inline = false
-env_check_sample_stride = 5
-env_check_region_crop_height = 180
-env_check_region_crop_bottom_height = 80
-env_check_engine = "off"
+model_api_url = "https://api.anthropic.com/v1/messages"
+api_key_env = "ARGUS_MODEL_API_KEY"
+model_id = "claude-sonnet-5-5"
+auxiliary_model_id = "claude-haiku-5-5"
+video_model_id = "claude-sonnet-5-5"
+# Optional audio-capable chat API. Both URL and model must be configured.
+# audio_api_url = "https://api.example.com/v1/chat/completions"
+# video_audio_model_id = "your-audio-model"
+# audio_api_key_env = "ARGUS_AUDIO_API_KEY"
+# audio_api_format = "openai"
 
-[logging]
-verbose = false
+[policy]
+storefront_domain = "example"
+expected_environment_markers = ["staging", "preprod"]
+defect_key_prefixes = ["QA-"]
 
-[notify]
-mode = "silent"
-tunnel_url = ""
-log_path = "~/.argus/notify.log"
+[server]
+host = "127.0.0.1"
+port = 2405
 
-[batch]
-concurrency = 8
-extractor_concurrency = 4
+[costs]
+refresh_seconds = 300
+monthly_budget_usd = 100.0
+# Add current provider rates in USD per million tokens. Without configured
+# rates ARGUS reports tokens/calls as unpriced, not as a zero-cost estimate.
+# [costs.model_rates."your-model-id"]
+# input_per_million = 1.0
+# output_per_million = 5.0
+# cache_write_per_million = 1.25
+# cache_read_per_million = 0.1

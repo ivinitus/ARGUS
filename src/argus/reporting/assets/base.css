@@ -1,0 +1,11 @@
+/* Basic browser defaults used by the dashboard. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; color-scheme: light; }
+html[data-cs-theme="dark"] { color-scheme: dark; }
+body { margin: 0; }
+button, input, select, textarea { font: inherit; }
+button, summary { cursor: pointer; }
+img, video { max-width: 100%; }
+button:disabled { cursor: default; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--ui-color-border-item-focused); outline-offset: 3px; }

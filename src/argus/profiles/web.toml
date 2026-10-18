@@ -1,0 +1,92 @@
+# Example policy profile. Configure your Jira URL and numeric project ID locally.
+
+[general]
+product_name = "ARGUS"
+team_name = "Web"
+team_slug = "web"
+state_dir = "~/.argus/web"
+
+[extractor]
+base_url = "https://jira.example.com"
+project_id = "10000"
+jira_pat_env = "ARGUS_JIRA_PAT"
+jira_pat_path = "~/.argus/jira.pat"
+execution_key_pattern = "^[A-Z][A-Z0-9_]*-E[0-9]+$"
+out_dir = "output/web"
+
+[auditor]
+model_id = "claude-sonnet-5-5"
+temperature = 0.0
+consensus_enabled = true
+chunk_threshold = 70
+chunk_size = 50
+chunk_overlap = 5
+chunk_max_parallel = 2
+chunk_page_byte_budget_mb = 6
+chunk_attachment_byte_budget_mb = 8
+repair_context_max_chars = 8000
+env_check_inline = false
+env_check_sample_stride = 5
+env_check_region_crop_height = 180
+env_check_region_crop_bottom_height = 80
+env_check_engine = "model"
+history_in_prompt = false
+history_max_entries = 5
+
+[batch]
+concurrency = 16
+extractor_concurrency = 4
+
+[notify]
+mode = "verbose"
+bot_admin_users = []
+
+[folders]
+auto_name_prefix = "Web regression"
+auto_max_age_days = 7
+dashboard_sections = ["Web regression"]
+
+[policy]
+defect_key_prefixes = ["QA-", "BUG-"]
+storefront_domain = "example"
+expected_environment_markers = ["preprod", "pre-prod", "staging"]
+
+[policy.marketplace_tlds]
+US = ".com"
+CA = ".ca"
+UK = ".co.uk"
+DE = ".de"
+FR = ".fr"
+IT = ".it"
+ES = ".es"
+IN = ".in"
+JP = ".co.jp"
+AU = ".com.au"
+BR = ".com.br"
+
+[policy.statuses]
+pass = "Pass"
+fail = "Fail"
+blocked = "Blocked"
+in_progress = "In Progress"
+passed_with_issue = "Passed With Issue"
+not_applicable = "Not Applicable"
+not_executed = "Not Executed"
+retest = "Retest"
+
+[prune]
+enabled = true
+older_than_days = 60
+
+[server]
+host = "127.0.0.1"
+port = 2405
+
+[hub]
+teams = ["web=Web", "desktop=Desktop", "tablet=Tablet", "mobile=Mobile", "reader=Reader", "tv=Tv", "portal=Portal"]
+
+[costs]
+refresh_seconds = 300
+monthly_budget_usd = 100.0
+warning_percent = 80.0
+critical_percent = 100.0

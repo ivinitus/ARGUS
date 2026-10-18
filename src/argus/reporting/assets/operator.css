@@ -1,0 +1,46 @@
+.argus-operator { margin-bottom: 24px; overflow: visible; }
+.argus-operator [hidden] { display: none !important; }
+.argus-operator .cs-container-header,
+.argus-operator-run-header,
+.argus-operator-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.argus-operator .cs-container-header { justify-content: space-between; border-radius: 16px 16px 0 0; }
+.argus-operator label { display: block; font-weight: 700; margin-bottom: 8px; }
+.argus-operator-label { display: flex; align-items: center; gap: 8px; position: relative; margin-bottom: 8px; }
+.argus-operator-label label { margin: 0; }
+.argus-operator-help { flex: none; }
+.argus-operator-help summary {
+  display: flex; align-items: center; justify-content: center; list-style: none;
+  width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%;
+  border: 2px solid var(--ui-color-text-link-default, #0972d3);
+  color: var(--ui-color-text-link-default, #0972d3);
+  font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.argus-operator-help summary::-webkit-details-marker { display: none; }
+.argus-operator-help summary:hover,
+.argus-operator-help[open] summary { background: var(--ui-color-background-item-selected, #f2f8fd); }
+.argus-operator-help summary:focus-visible { outline: 3px solid #539fe5; outline-offset: 3px; }
+.argus-operator-help-content {
+  position: absolute; z-index: 30; left: 0; top: calc(100% + 8px);
+  width: min(440px, 100%); box-sizing: border-box; max-height: min(320px, 60vh);
+  overflow-y: auto; overscroll-behavior: contain; padding: 16px; border-radius: 8px;
+  border: 1px solid var(--ui-color-border-divider-default, #9ba7b6);
+  background: var(--ui-color-background-container-content, #fff);
+  color: var(--ui-color-text-body-default, #16191f);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .2); font-size: 14px; line-height: 20px;
+}
+.argus-operator-help-content p { margin: 8px 0 0; }
+.argus-operator-actions input { flex: 1 1 300px; min-width: 0; }
+.argus-operator button {
+  font: inherit; font-weight: 700; padding: 7px 18px; border-radius: 20px;
+  border: 2px solid var(--ui-color-text-link-default, #0972d3);
+  color: var(--ui-color-text-link-default, #0972d3); background: transparent; cursor: pointer;
+}
+.argus-operator button.argus-operator-primary { background: #0972d3; border-color: #0972d3; color: #fff; }
+.argus-operator button:disabled { opacity: .5; cursor: default; }
+.argus-operator button:focus-visible { outline: 3px solid #539fe5; outline-offset: 3px; }
+.argus-operator [data-operator-message].error { color: var(--ui-color-text-status-error, #d91515); }
+.argus-operator-run-header { justify-content: space-between; }
+.argus-operator pre {
+  max-height: 260px; overflow: auto; padding: 12px; white-space: pre-wrap;
+  overflow-wrap: anywhere; font-size: 12px; background: var(--ui-color-background-layout-main, #f2f3f3);
+}

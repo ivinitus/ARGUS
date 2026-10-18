@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team rules · {{TEAM_NAME}} · ARGUS</title>{{HEAD}}{{SHARED_CSS}}<style>{{CSS}}</style></head>
+<body>{{TOPNAV}}
+<div class="application-layout" id="application-layout">{{SIDENAV}}
+<main class="argus-main main-content rules-workspace">
+  <div id="demo-banner" class="rules-alert" hidden><strong>Local demo</strong><span>Sample data · Python checks run locally. LLM checks are simulated.</span></div>
+  <nav class="cs-crumbs" aria-label="Breadcrumbs"><a href="{{TEAM_URL}}">{{TEAM_NAME}}</a><span class="sep">›</span><a href="#rules">Team rules</a><span id="detail-crumb" hidden></span></nav>
+  <div id="notice" class="rules-alert" role="status" aria-live="polite" hidden></div>
+  <div id="signin" class="rules-alert" hidden><span>Sign in to view this team's rules.</span><a id="signin-link" class="cs-btn">Sign in</a><button id="reconnect" class="cs-btn">Reconnect</button></div>
+  <section class="cs-header">
+    <div><h1 id="page-title" tabindex="-1">Team rules</h1><p id="page-description">Checks and evidence requirements for {{TEAM_NAME}}.</p></div>
+    <div class="cs-actions"><button id="refresh" class="cs-btn">Refresh</button><button id="test-saved-draft" class="cs-btn" hidden>Test draft</button><button id="save-draft" class="cs-btn rules-primary" disabled>Save draft</button></div>
+  </section>
+  <div class="rules-metadata" aria-label="Rule state">
+    <span><strong id="active-version">Loading rules…</strong><span id="published-detail"></span></span>
+    <span id="identity"></span><span id="draft-status" class="rules-status">No draft</span>
+    <button id="view-changes" class="rules-link" disabled>View changes <span id="change-count">0</span></button>
+  </div>
+  <p id="read-only" class="rules-alert" hidden>You don't have permission to edit these rules.</p>
+  <div id="editor" hidden>
+    <div id="tabs" class="rules-tabs" role="tablist" aria-label="Team rules">
+      <button role="tab" id="tab-button-rules" data-tab="rules" aria-controls="tab-rules" aria-selected="true">Rules</button>
+      <button role="tab" id="tab-button-policies" data-tab="policies" aria-controls="tab-policies" aria-selected="false" tabindex="-1">Policies</button>
+      <button role="tab" id="tab-button-test" data-tab="test" aria-controls="tab-test" aria-selected="false" tabindex="-1">Test changes</button>
+      <button role="tab" id="tab-button-history" data-tab="history" aria-controls="tab-history" aria-selected="false" tabindex="-1">History</button>
+    </div>
+    <section id="tab-rules" role="tabpanel" aria-labelledby="tab-button-rules">
+      <div class="cs-container rules-panel">
+        <div class="cs-container-header"><h2>Rules <span id="rule-count" class="cs-counter"></span></h2><span id="rules-settings-hint" class="rules-header-help" hidden>Select a rule to view its settings.</span><button id="add-rule" class="cs-btn rules-primary">Create rule</button></div>
+        <div class="rules-toolbar">
+          <input id="rule-search" type="search" placeholder="Find a rule" aria-label="Find a rule">
+          <select id="rule-type" aria-label="Rule type"><option value="">All types</option><option value="builtin">Built-in</option><option value="custom">All custom</option><option value="structured">Python check</option><option value="evidence">LLM check</option></select>
+          <select id="rule-state" aria-label="Rule state"><option value="">All states</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select>
+          <label class="rules-check"><input type="checkbox" id="changed-only">Changed only</label>
+          <button id="clear-filters" class="rules-link">Clear filters</button><span id="visible-count" class="rules-muted"></span>
+        </div>
+        <div class="rules-table-scroll"><table class="argus-table rules-table"><thead><tr><th scope="col">Rule</th><th scope="col">Type</th><th scope="col">Enabled</th><th scope="col">Severity</th><th scope="col">Changes</th></tr></thead><tbody id="rules-body"></tbody></table></div>
+        <div id="rules-empty" class="rules-empty" hidden>No rules match these filters.</div>
+      </div>
+    </section>
+    <section id="tab-policies" role="tabpanel" aria-labelledby="tab-button-policies" hidden>
+      <div class="cs-container rules-policy-panel">
+      <div id="policy-fields"></div>
+      <details class="rules-policy"><summary><span>Advanced evidence policy</span><span class="rules-policy-summary">Text requirements and exceptions</span></summary><div class="rules-section-body">
+        <label for="evidence-policy">Evidence requirements and exceptions</label>
+        <p class="rules-help" id="evidence-help">Changes here are assessed alongside the structured checks. Test related requirements together.</p>
+        <textarea id="evidence-policy" rows="10" maxlength="60000" required aria-describedby="evidence-help"></textarea>
+      </div></details>
+      </div>
+    </section>
+    <section id="tab-test" role="tabpanel" aria-labelledby="tab-button-test" hidden>
+      <div class="cs-container rules-panel">
+      <section class="rules-panel-section">
+        <div class="cs-container-header"><h2>Test changes</h2><span id="preview-status" role="status"></span></div>
+        <div class="rules-section-body">
+          <p class="rules-intro">Compare the current rules and your draft using saved test evidence. Saved reports are not changed.</p>
+          <div class="rules-picker-heading"><div><label for="report-select">Report</label><select id="report-select"><option value="">Choose a report</option></select></div><button id="reload-tests" class="rules-link">Reload tests</button></div>
+          <div id="picker-notice" class="rules-help" role="status"></div>
+          <div id="test-picker" hidden>
+            <div class="rules-toolbar"><input id="test-search" type="search" placeholder="Find a test or run" aria-label="Find a saved test"><span id="selection-count"></span><button id="clear-selection" class="rules-link">Clear selection</button></div>
+            <div class="rules-table-scroll"><table class="argus-table rules-table selection-table"><thead><tr><th scope="col">Select</th><th scope="col">Test</th><th scope="col">Run</th><th scope="col">Current verdict</th><th scope="col">Execution date</th></tr></thead><tbody id="test-rows"></tbody></table></div>
+            <div class="rules-pagination"><button id="tests-previous" class="cs-btn">Previous</button><span id="test-page-count"></span><button id="tests-next" class="cs-btn">Next</button></div>
+          </div>
+          <div class="rules-action-row rules-section-actions"><button id="run-preview" class="cs-btn rules-primary" disabled>Test changes</button><span id="test-requirement" class="rules-help">Save a draft and select 1–10 tests.</span></div>
+        </div>
+      </section>
+      <div id="preview-results"></div>
+      <section class="rules-panel-section">
+        <div class="cs-container-header"><h2>Publish rules</h2></div>
+        <div class="rules-section-body rules-publish-grid">
+          <div><h3>Changes to publish</h3><div id="publish-summary"></div><p id="publish-requirement" class="rules-help">A completed test of this draft is required.</p></div>
+          <div><label for="publish-note">Change summary</label><input id="publish-note" maxlength="1000" placeholder="Describe the rule changes">
+            <div class="rules-action-row"><button id="publish" class="cs-btn rules-primary" disabled>Publish rules</button></div>
+          </div>
+        </div>
+      </section>
+      </div>
+    </section>
+    <section id="tab-history" role="tabpanel" aria-labelledby="tab-button-history" hidden>
+      <div class="cs-container rules-panel"><div class="cs-container-header"><h2>Version history <span id="history-count" class="cs-counter"></span></h2><span class="rules-header-help">Select a version to inspect its changes.</span></div><div class="rules-table-scroll"><table class="argus-table rules-table rules-history-table"><thead><tr><th scope="col">Version</th><th scope="col">Published</th><th scope="col">Change summary</th><th scope="col">Actions</th></tr></thead><tbody id="history"></tbody></table></div></div>
+    </section>
+    <section id="rule-settings-panel" hidden>
+      <form id="rule-settings-form">
+        <div class="cs-container rules-panel">
+          <section class="rules-panel-section"><div class="cs-container-header"><h2 id="settings-rule-name"></h2><span id="settings-rule-kind" class="rules-badge"></span></div>
+            <div class="rules-section-body"><p id="settings-rule-description" class="rules-detail-description"></p><p id="settings-protected" class="rules-help" hidden>This check is always enabled and its severity is protected.</p>
+              <div class="rules-field-grid rules-detail-controls">
+                <div id="settings-state-field"><label for="settings-state">Check state</label><select id="settings-state"><option value="true">Enabled</option><option value="false">Disabled</option></select><p id="settings-state-help" class="rules-help"></p></div>
+                <div id="settings-account-field" hidden><label for="settings-account">Account check mode</label><select id="settings-account"><option value="disabled">Disabled</option><option value="advisory">Advisory</option><option value="enforced">Enforced</option></select><p id="settings-account-help" class="rules-help"></p></div>
+                <div><label for="settings-severity">Finding severity</label><select id="settings-severity"></select><p id="settings-severity-help" class="rules-help"></p></div>
+                <div id="settings-impact-field" hidden><label for="settings-impact">Result impact</label><select id="settings-impact"><option value="advisory">Advisory only</option><option value="enforce">Affects verdict</option></select></div>
+              </div>
+            </div>
+          </section>
+          <section id="settings-related-section" class="rules-panel-section"><div class="cs-container-header"><h2>Related policy settings</h2></div><div class="rules-section-body"><p class="rules-help rules-detail-intro">These settings are shared with related checks. Select a setting to configure it in Policies.</p><div id="settings-related"></div></div></section>
+          <section id="settings-definition-section" class="rules-panel-section" hidden><div class="cs-container-header"><h2>Rule definition</h2><span class="rules-header-help">Maintained by developers</span></div><div id="settings-definition" class="rules-section-body"></div></section>
+        </div>
+        <div class="rules-form-actions"><span></span><button type="button" id="cancel-rule-settings" class="cs-btn">Cancel</button><button type="submit" id="save-rule-settings" class="cs-btn rules-primary">Save draft</button></div>
+      </form>
+    </section>
+    <section id="rule-form-panel" hidden>
+      <form id="rule-form">
+        <div class="cs-container rules-panel">
+        <section id="authoring-section" class="rules-panel-section" hidden><div class="cs-container-header"><h2>Describe a rule</h2><span class="rules-badge">Demo interpreter</span></div><div class="rules-section-body">
+          <label for="authoring-text">Rule description</label><textarea id="authoring-text" rows="3" maxlength="4000" placeholder="Failed purchase tests need at least two attachments." aria-describedby="authoring-help"></textarea>
+          <p id="authoring-help" class="rules-help">This prototype recognises supported sentence patterns without a model call. Review and apply the interpretation. The controls below define the saved rule; the original description is kept for reference.</p>
+          <div class="rules-action-row rules-authoring-actions"><button type="button" id="authoring-review" class="cs-btn">Review description</button><button type="button" id="authoring-example-check" class="rules-link">Attachment example</button><button type="button" id="authoring-example-evidence" class="rules-link">Screenshot example</button></div>
+          <div id="authoring-recommendation" class="rules-authoring-review" hidden aria-live="polite"></div>
+          <p id="authoring-pending" class="rules-help" hidden>The description has changed. Review it before saving, or <button type="button" id="authoring-discard" class="rules-link">keep the current controls</button>.</p>
+        </div></section>
+        <section id="rule-method-section" class="rules-panel-section" hidden><div class="rules-section-body rules-method-row">
+          <div><label for="rule-method">Evaluation method</label><select id="rule-method"><option value="structured">Deterministic checks</option><option value="evidence">AI evidence assessment</option></select></div>
+          <p id="rule-method-help" class="rules-help">Conditions and checks run in Python. No model calls.</p>
+        </div></section>
+        <section class="rules-panel-section"><div class="cs-container-header"><h2>Rule details</h2></div><div class="rules-section-body rules-field-grid rules-name-grid">
+          <div><label for="custom-name">Rule name</label><input id="custom-name" name="name" required maxlength="160"></div>
+          <div><label for="custom-enabled">State</label><select id="custom-enabled" name="enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></div>
+        </div></section>
+        <section id="builder-conditions-section" class="rules-panel-section" hidden><div class="cs-container-header"><h2>Apply when</h2><button type="button" id="builder-example" class="rules-link">Use defect example</button></div><div class="rules-section-body">
+          <div class="rules-condition-heading"><label for="builder-match">Match</label><select id="builder-match"><option value="all">All conditions</option><option value="any">Any condition</option></select><button type="button" id="builder-add-condition" class="rules-link">Add condition</button></div>
+          <div id="builder-conditions"></div>
+        </div></section>
+        <section id="builder-check-section" class="rules-panel-section" hidden><div class="cs-container-header"><h2>Check</h2></div><div class="rules-section-body">
+          <div class="rules-field-grid">
+            <div><label for="builder-check">Requirement</label><select id="builder-check"></select></div>
+            <div id="builder-scope-field"><label for="builder-scope">Search in</label><select id="builder-scope"></select></div>
+            <div id="builder-minimum-field" hidden><label for="builder-minimum">Minimum attachments</label><div class="rules-number-control"><input id="builder-minimum" type="number" min="1" max="100" step="1" value="1" required></div></div>
+            <div id="builder-value-field" hidden><label for="builder-field">Recorded field</label><select id="builder-field"></select></div>
+            <div id="builder-operator-field" hidden><label for="builder-operator">Comparison</label><select id="builder-operator"></select></div>
+            <div id="builder-value-input-field" hidden><label id="builder-value-label" for="builder-value">Comparison value</label><input id="builder-value" maxlength="200" required><p id="builder-value-help" class="rules-help"></p></div>
+          </div>
+          <p id="builder-check-help" class="rules-help"></p>
+        </div></section>
+        <section class="rules-panel-section rules-evidence-fields"><div class="cs-container-header"><h2>Conditions</h2></div><div class="rules-section-body">
+          <label for="custom-applies">When does this apply?</label><textarea id="custom-applies" name="applies_when" required maxlength="2000" rows="3" placeholder="Purchase tests that report a successful transaction"></textarea>
+          <details class="rules-advanced"><summary>Limit to specific cases or runs</summary><div class="rules-field-grid">
+            <div><label for="custom-cases">Test cases</label><input id="custom-cases" placeholder="QA-T123, QA-T456"><p class="rules-help">Optional. Separate keys with commas.</p><p id="custom-cases-error" class="rules-field-error" hidden></p></div>
+            <div><label for="custom-runs">Test runs</label><input id="custom-runs" placeholder="QA-C123"><p class="rules-help">Optional. Separate keys with commas.</p><p id="custom-runs-error" class="rules-field-error" hidden></p></div>
+          </div></details>
+        </div></section>
+        <section class="rules-panel-section rules-evidence-fields"><div class="cs-container-header"><h2>Requirement and evidence</h2><button type="button" id="use-example" class="rules-link">Use purchase-email example</button></div><div class="rules-section-body">
+          <label for="custom-requirement">What should be checked?</label><textarea id="custom-requirement" name="requirement" required maxlength="4000" rows="4"></textarea>
+          <label for="custom-evidence">Expected evidence</label><textarea id="custom-evidence" name="expected_evidence" required maxlength="2000" rows="3"></textarea>
+          <label for="custom-examples">Examples <span class="rules-muted">— optional</span></label><textarea id="custom-examples" name="examples" maxlength="4000" rows="3"></textarea>
+        </div></section>
+        <section class="rules-panel-section"><div class="cs-container-header"><h2>Result settings</h2></div><div class="rules-section-body rules-field-grid">
+          <div><label for="custom-mode">Impact on results</label><select id="custom-mode" name="mode"><option value="advisory">Advisory only</option><option value="enforce">Affects verdict</option></select><p class="rules-help">Advisory findings leave the verdict unchanged.</p></div>
+          <div><label for="custom-severity">Severity</label><select id="custom-severity" name="severity"><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select><p id="custom-impact" class="rules-help"></p></div>
+        </div></section>
+        <section id="builder-preview-section" class="rules-panel-section" hidden><div class="cs-container-header"><h2>Rule preview</h2><span id="builder-engine" class="rules-badge">Python</span></div><div class="rules-section-body">
+          <p id="builder-summary" class="rules-builder-summary" aria-live="polite"></p>
+          <p id="builder-impact" class="rules-help"></p>
+          <div class="rules-action-row"><button type="button" id="builder-try" class="cs-btn">Try sample tests</button><button type="button" id="inspect-rule" class="rules-link">Check for duplicates</button><span id="builder-test-status" class="rules-help" role="status">Test this rule against four sample executions.</span></div>
+          <div id="rule-matches" class="rules-related-rules" hidden aria-live="polite"></div>
+          <div id="builder-results"></div>
+        </div></section>
+        </div>
+        <div class="rules-form-actions"><button type="button" id="remove-custom" class="rules-link rules-danger">Remove rule</button><span></span><button type="button" id="cancel-custom" class="cs-btn">Cancel</button><button type="submit" id="save-custom" class="cs-btn rules-primary">Save draft</button></div>
+      </form>
+    </section>
+    <section id="version-panel" hidden>
+      <div class="cs-container rules-panel"><div class="cs-container-header"><h2 id="version-title"></h2><div class="cs-actions"><button id="version-back" class="cs-btn">Back to history</button><button id="version-restore" class="cs-btn rules-primary">Restore as draft</button></div></div><div class="rules-section-body"><p id="version-meta" class="rules-help"></p><h3>Compared with published rules</h3><div id="version-diff"></div><details class="rules-advanced"><summary>Version contents</summary><div id="version-contents"></div></details></div></div>
+    </section>
+  </div>
+</main></div>
+<dialog id="changes-dialog" class="rules-dialog" aria-labelledby="changes-title"><div class="cs-container-header"><h2 id="changes-title">Draft changes</h2><button id="close-changes" class="cs-btn">Close</button></div><div class="rules-section-body" id="changes-content"></div></dialog>
+<script id="rules-config" type="application/json">{{CONFIG}}</script><script>{{MODEL_JS}}</script><script>{{JS}}</script>
+</body></html>

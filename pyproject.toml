@@ -1,59 +1,91 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
 [project]
-name = "argus-qa"
-version = "0.1.0"
-description = "Local audit and reporting dashboard for manual QA evidence"
+name = "argus-qa-auditor"
+version = "0.2.0"
+description = "Configurable Zephyr execution extractor and LLM screenshot auditor"
 readme = "README.md"
+license = "MIT"
+authors = [{name = "ARGUS contributors"}]
+keywords = ["qa", "zephyr", "jira", "audit", "evidence"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Quality Assurance",
+]
 requires-python = ">=3.11"
 dependencies = [
-    "boto3==1.42.96",
-    "pymupdf==1.24.14",
+    "pymupdf==1.26.7",
     "requests==2.33.1",
+    "Pillow>=10",
+    "rich>=13",
+    "slack-sdk>=3.21,<4",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
+video = ["av==16.0.1"]
+browser = ["playwright==1.64.0"]
 dev = [
     "pytest==9.0.3",
+    "ruff==0.15.22",
+    "mypy>=1.13",
+    "build>=1.2",
 ]
 
 [project.scripts]
-argus-run = "argus:main"
-argus-report = "report:main"
-argus-serve = "argus_serve:main"
-argus-replay = "replay:main"
-argus-bench = "bench:main"
+argus = "argus.cli.main:main"
 
-[build-system]
-requires = ["setuptools>=69"]
-build-backend = "setuptools.build_meta"
+[tool.hatch.build.targets.wheel]
+packages = ["src/argus"]
 
-[tool.setuptools]
-py-modules = [
-    "argus",
-    "argus_control",
-    "argus_serve",
-    "auditor",
-    "auditor_chunking",
-    "auditor_prompts",
-    "auditor_render",
-    "backfill_users",
-    "batch",
-    "bench",
-    "config",
-    "coverage",
-    "env_check",
-    "env_check_backfill",
-    "env_check_haiku",
-    "extractor",
-    "history_index",
-    "notify",
-    "progress",
-    "replay",
-    "report",
-    "users",
-    "validate_v5_modes",
-    "workflow_rules",
+[tool.hatch.build.targets.sdist]
+include = ["src/argus", "tests", "docs", "tools", "README.md", "LICENSE", "CHANGELOG.md", "CONTRIBUTING.md", "config.example.toml", ".env.example", "pyproject.toml", "requirements*.txt", "run_audit.sh", "cron_wrapper.sh", "Dockerfile"]
+
+# ---------------------------------------------------------------------------
+# Lint — ruff
+# Scope is deliberately conservative: correctness-adjacent rules only, no
+# style reformatting churn on a battle-tested codebase.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+    "output",
+    ".venv",
+    ".claude",
+    "bench_results.json",
+    "build",
 ]
+
+[tool.ruff.lint]
+select = [
+    "E9",     # syntax / io errors
+    "E402",   # module-import-not-at-top — see the note below
+    "F",      # pyflakes (undefined names, unused imports/vars)
+    "B",      # bugbear (mutable defaults, loop-var capture, ...)
+    "PLE",    # pylint errors
+    "RUF100", # unused noqa
+]
+ignore = [
+    "B011",  # assert-false in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F841"]  # tests keep named intermediates for readability
+
+# ---------------------------------------------------------------------------
+# Types — mypy
+# Gradual adoption: no strictness flags yet; the goal is catching obvious
+# attribute/name errors without demanding annotations everywhere.
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = false
+warn_unused_ignores = false
+exclude = "(^output/|^\\.venv/|^\\.claude/|^tools/|^build/)"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"

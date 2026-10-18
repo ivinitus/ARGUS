@@ -1,0 +1,36 @@
+<header class="topbar">
+  <a href="./" class="brand">ARGUS <span>Human review</span></a>
+  <div><span id="identity"></span> <a id="login" class="button">Sign in</a></div>
+</header>
+<main>
+  <div class="heading"><div><p class="eyebrow">REVIEW WORKSPACE</p><h1 id="title">Review cases</h1>
+    </div>
+    <button id="refresh">Refresh</button></div>
+  <div id="message" role="status" aria-live="polite"></div>
+  <section id="stats" class="stats" aria-label="Review progress"></section>
+  <details class="allocation"><summary>Manage reviewers and assignments</summary>
+    <div id="roster"></div>
+    <div class="actions"><button id="add-reviewer">Add reviewer</button><button id="preview" class="primary">Preview allocation</button></div>
+    <div id="allocation-preview" hidden></div>
+    <h3>Reviewer progress</h3><div id="reviewer-progress" role="region" aria-label="Reviewer progress" tabindex="0"></div>
+  </details>
+  <div class="workspace">
+    <section class="queue-panel" aria-label="Execution queue">
+      <div class="filters">
+        <label>Reviewers<select id="reviewer"><option value="">All reviewers</option></select></label>
+        <label>Run<select id="run"><option value="">All runs</option></select></label>
+        <label>Verdict<select id="verdict"><option value="">All verdicts</option>
+          <option value="pass">Compliant</option><option value="concerns">Concern</option>
+          <option value="fail">Deviation</option></select></label>
+        <label>State<select id="state"><option value="">All states</option><option value="pending">Awaiting review</option>
+          <option value="investigation">Needs investigation</option><option value="reviewed">Reviewed</option>
+          <option value="unassigned">Unassigned</option></select></label>
+      </div>
+      <p id="queue-count"></p><div id="queue"></div>
+      <div class="actions"><button id="previous">Previous page</button><button id="next">Next page</button></div>
+    </section>
+    <section id="case" class="case-panel" aria-label="Execution review">
+      <div class="empty"><h2>Choose a case to review</h2><p>Your steps, evidence and findings will appear here.</p></div>
+    </section>
+  </div>
+</main>

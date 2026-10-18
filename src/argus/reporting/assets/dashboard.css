@@ -1,0 +1,499 @@
+/* ARGUS dashboard theme on ARGUS tokens: layout, components, dark mode. Loaded after argus.css. */
+
+/* ---- map the report's variables onto ARGUS tokens ----
+   Match the legacy html[data-theme] / OS-theme selector specificity so
+   the selected ARGUS palette owns both tokens and native controls. */
+html:root{
+  color-scheme:light;
+  --argus-bg:var(--ui-color-background-layout-main);
+  --argus-surface:var(--ui-color-background-container-content);
+  --argus-border:var(--ui-color-border-divider-secondary);
+  --argus-text:var(--ui-color-text-body-default);
+  --argus-text-2:var(--ui-color-text-body-secondary);
+  --argus-blue:var(--ui-color-text-link-default);
+  --argus-blue-h:var(--ui-color-text-link-hover);
+  --argus-navy:var(--ui-color-background-home-header);
+  --argus-pass-bg:var(--ui-color-background-status-success);   --argus-pass-fg:var(--ui-color-text-status-success);
+  --argus-concerns-bg:var(--ui-color-background-status-warning);--argus-concerns-fg:var(--ui-color-text-status-warning);
+  --argus-fail-bg:var(--ui-color-background-status-error);     --argus-fail-fg:var(--ui-color-text-status-error);
+  --argus-sev-high:var(--ui-color-text-status-error);
+  --argus-sev-medium:var(--ui-color-text-status-warning);
+  --argus-sev-low:var(--ui-color-text-status-inactive);
+  --argus-row-hover:var(--ui-color-background-cell-shaded);
+  --cs-shadow:0 1px 1px 1px #e9ebed, 0 1px 8px 2px rgba(0,7,22,.10);
+  --argus-ink:var(--ui-color-text-body-default); --argus-ink-2:var(--ui-color-text-body-secondary);
+  --argus-rule:var(--ui-color-border-divider-default); --argus-rule-2:var(--ui-color-border-divider-secondary); --argus-grid:var(--ui-color-border-divider-secondary);
+  --argus-row-alt:var(--ui-color-background-cell-shaded); --argus-unaudited-bg:var(--ui-color-background-cell-shaded); --argus-unaudited-hover:var(--ui-color-background-item-selected); --argus-unaudited-chip:var(--ui-color-background-badge-grey);
+  --argus-fail-strong:var(--ui-color-text-status-error); --argus-fail-tint:var(--ui-color-background-status-error); --argus-pass-strong:var(--ui-color-text-status-success); --argus-concerns-strong:var(--ui-color-text-status-warning);
+  --argus-filter-tint:var(--ui-color-background-item-selected); --argus-active-tint:var(--ui-color-background-item-selected); --argus-navy-2:var(--ui-color-background-home-header); --argus-gold:#ffb84d;
+  --argus-action:#ff9900; --argus-action-hover:#ec7211; --argus-action-text:#16191f;
+  --argus-badge-blocked:var(--ui-color-background-badge-blue); --argus-badge-inprog:var(--ui-color-background-badge-yellow); --argus-badge-na:var(--ui-color-background-badge-grey);
+  --ui-font-family-base:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --cs-font-display:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+html[data-cs-theme="dark"]{--ui-font-family-base:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.cs-header h1,.cs-wordmark{font-family:var(--cs-font-display)}
+.cs-mark{display:block;flex:none;width:34px;height:34px;object-fit:contain} .cs-wordmark{font-size:18px;letter-spacing:.3px}
+/* dashboard switcher menu */
+.cs-switcher{position:relative}
+.cs-menu{position:absolute;right:0;top:100%;margin-top:6px;min-width:240px;background:var(--ui-color-background-container-content);color:var(--ui-color-text-body-default);border:1px solid var(--ui-color-border-divider-default);border-radius:8px;box-shadow:0 8px 24px rgba(0,7,22,.25);padding:6px;z-index:1200;text-align:left}
+.cs-menu[hidden]{display:none}
+.cs-menu p{margin:4px 8px 6px;font-size:12px;font-weight:700;color:var(--ui-color-text-counter)}
+.cs-menu a{display:flex;justify-content:space-between;gap:12px;padding:6px 10px;border-radius:4px;color:var(--ui-color-text-body-default);text-decoration:none;font-size:14px}
+.cs-menu a:hover{background:var(--ui-color-background-cell-shaded);text-decoration:none}
+.cs-menu a.is-current{font-weight:700;color:var(--ui-color-text-link-default)}
+.cs-menu a small{color:var(--ui-color-text-counter);font-size:12px}
+.cs-menu hr{border:none;border-top:1px solid var(--ui-color-border-divider-secondary);margin:6px 0}
+/* teams + dashboard pages */
+.cs-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.cs-card-body{padding:14px 20px 18px;color:var(--ui-color-text-body-secondary);font-size:14px;display:flex;flex-direction:column;gap:6px;min-height:120px}
+.cs-card-body .kv{display:flex;justify-content:space-between;gap:12px} .cs-card-body .kv strong{color:var(--ui-color-text-body-default);font-weight:400}
+.cs-card-foot{padding:0 20px 18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cs-muted{color:var(--ui-color-text-counter);font-size:13px}
+.cs-eyebrow-badge{display:inline-block;background:var(--ui-color-background-badge-blue);color:#f9f9fa;border-radius:4px;font-size:12px;font-weight:700;padding:0 8px;line-height:18px}
+
+/* ---- dark visual mode ---- */
+html[data-cs-theme="dark"]{color-scheme:dark;--cs-shadow:none}
+html[data-cs-theme="dark"] .cs-container,html[data-cs-theme="dark"] .argus-tester-panel,html[data-cs-theme="dark"] .argus-legacy-panel{border:1px solid var(--ui-color-border-divider-default)}
+html[data-cs-theme="dark"] .side-navigation{border-right-color:var(--ui-color-border-divider-default)}
+html[data-cs-theme="dark"] .cs-btn-primary{background:#ff9900;border-color:#ff9900;color:#0f141a} html[data-cs-theme="dark"] .cs-btn-primary:hover{background:#ec7211;border-color:#ec7211;color:#0f141a}
+html[data-cs-theme="dark"] .argus-badge.argus-verdict-pass::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2329ad32' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M5 8.3l2 2 4-4.5'/%3E%3C/svg%3E")}
+html[data-cs-theme="dark"] .argus-badge.argus-verdict-concerns::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23e0ca57' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2 14.5 14H1.5z'/%3E%3Cpath d='M8 6.5v3.2M8 12v.2'/%3E%3C/svg%3E")}
+html[data-cs-theme="dark"] .argus-badge.argus-verdict-fail::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23ff7a7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M5.5 5.5l5 5M10.5 5.5l-5 5'/%3E%3C/svg%3E")}
+html[data-cs-theme="dark"] .argus-noevd-panel::before,html[data-cs-theme="dark"] .argus-noevd-icon{background-color:var(--ui-color-text-status-error)}
+html[data-cs-theme="dark"] .argus-issue-chip{border-color:var(--ui-color-text-link-default)}
+html[data-cs-theme="dark"] .argus-coverage-drawer{box-shadow:-4px 0 16px rgba(0,0,0,.5)}
+html[data-cs-theme="dark"] .cs-gear{color:#f9f9fa}
+html{line-height:normal}
+body{margin:0;font-family:var(--ui-font-family-base);font-size:var(--ui-font-size-body-m);line-height:var(--ui-line-height-body-m);
+  color:var(--ui-color-text-body-default);background:var(--ui-color-background-layout-main)}
+button,input,select{font:inherit}
+a,.argus-key-link,.argus-link,.argus-testrun-link,.argus-tester-link{color:var(--ui-color-text-link-default);font-weight:400}
+a:hover,.argus-tester-link:hover{color:var(--ui-color-text-link-hover);text-decoration:underline}
+.argus-header,#argus-theme-toggle{display:none}
+
+/* ---- Top navigation (dark visual context, 40px) ---- */
+.cs-topnav{position:sticky;top:0;z-index:1000;height:40px;background:var(--ui-color-background-home-header);display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 20px}
+.cs-topnav-left{display:flex;align-items:center;gap:6px}
+.cs-nav-toggle{background:none;border:none;color:#d1d5db;font-size:18px;line-height:1;width:32px;height:32px;border-radius:4px;cursor:pointer;margin-left:-8px}
+.cs-nav-toggle:hover{background:#232b37;color:#fff}
+.cs-identity{display:flex;align-items:center;gap:10px;color:#f9f9fa;text-decoration:none;font-size:16px;font-weight:700;line-height:20px}
+.cs-identity:hover{color:#fff;text-decoration:none}
+.cs-logo{width:24px;height:24px;border-radius:6px;background:var(--ui-color-background-button-primary-default);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+.cs-utils{display:flex;align-items:center;gap:2px}
+.cs-util{background:none;border:none;color:#d1d5db;font-size:14px;line-height:20px;padding:6px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.cs-util:hover{color:#fff;background:#232b37;text-decoration:none}
+.cs-caret{font-size:10px;opacity:.8}
+.cs-gear{font-size:18px;padding:4px 8px}
+.cs-util-sep{width:1px;height:20px;background:#424650;margin:0 6px}
+.cs-ext-icon{font-size:12px;line-height:1;opacity:.8}
+
+/* ---- Content layout: breadcrumbs + page header ---- */
+.cs-content,.argus-main{max-width:1440px;margin:0 auto;padding:0 40px}
+.cs-content{padding-top:20px}
+.argus-main{padding-bottom:40px}
+.cs-crumbs{display:flex;flex-wrap:wrap;gap:8px;font-size:14px;line-height:20px;margin-bottom:12px;color:var(--ui-color-text-body-secondary)}
+.cs-crumbs a{text-decoration:none} .cs-crumbs .sep{color:var(--ui-color-text-counter)}
+.cs-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.cs-header>div:first-child{min-width:0}
+.cs-header h1{margin:0;font-size:var(--ui-font-size-heading-xl);line-height:var(--ui-line-height-heading-xl);font-weight:var(--ui-font-weight-heading-xl);color:var(--ui-color-text-heading-default)}
+.cs-counter{color:var(--ui-color-text-counter);font-weight:400;margin-left:6px}
+.cs-header p{margin:4px 0 0;color:var(--ui-color-text-body-secondary)}
+.cs-actions{display:flex;gap:8px;align-items:center;margin-left:auto;padding-top:2px}
+.cs-btn,.argus-btn-clear,.argus-issues-more,.argus-issues-fewer{font-size:14px;line-height:20px;font-weight:var(--ui-font-weight-button);border-radius:var(--ui-border-radius-button);padding:4px 20px;border:2px solid var(--ui-color-border-button-normal-default);color:var(--ui-color-text-button-normal-default);background:var(--ui-color-background-button-normal-default);text-decoration:none;display:inline-block;cursor:pointer;letter-spacing:0;text-transform:none}
+.cs-btn:hover,.argus-btn-clear:hover,.argus-issues-more:hover,.argus-issues-fewer:hover{background:var(--ui-color-background-button-normal-hover);border-color:var(--ui-color-border-button-normal-hover);color:var(--ui-color-border-button-normal-hover);text-decoration:none}
+.cs-btn-primary{background:var(--ui-color-background-button-primary-default);border-color:var(--ui-color-background-button-primary-default);color:var(--ui-color-text-button-primary-default)}
+.cs-btn-primary:hover{background:var(--ui-color-background-button-primary-hover);border-color:var(--ui-color-background-button-primary-hover);color:#fff}
+.argus-issues-more,.argus-issues-fewer{padding:0 12px;font-size:12px;line-height:18px;margin-top:4px}
+#argus-coverage-open,.argus-folder-row a.cs-btn{background:var(--argus-action);border-color:var(--argus-action);color:var(--argus-action-text);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.16)}
+#argus-coverage-open:hover,.argus-folder-row a.cs-btn:hover{background:var(--argus-action-hover);border-color:var(--argus-action-hover);color:var(--argus-action-text);text-decoration:none}
+#argus-coverage-open:focus-visible,.argus-folder-row a.cs-btn:focus-visible{outline:2px solid var(--ui-color-border-item-focused);outline-offset:2px}
+
+/* ---- Flashbar (info) ---- */
+.cs-flash{display:flex;gap:12px;align-items:flex-start;background:var(--ui-color-background-notification-blue);color:var(--ui-color-text-notification-default);border-radius:var(--ui-border-radius-flashbar);padding:8px 16px;margin-bottom:20px}
+.cs-flash-icon{flex:none;width:16px;height:16px;margin-top:2px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23f9f9fa' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M8 7.5v4M8 4.6v.2'/%3E%3C/svg%3E") center/contain no-repeat}
+.cs-flash-dismiss{margin-left:auto;background:none;border:none;color:inherit;font-size:20px;line-height:1;cursor:pointer;padding:0 2px}
+
+/* ---- Containers ---- */
+.cs-container,.argus-tester-panel,.argus-noevd-panel,.argus-legacy-panel{background:var(--ui-color-background-container-content);border:none;border-radius:var(--ui-border-radius-container);box-shadow:var(--cs-shadow);margin:0 0 20px;padding:0;overflow:hidden}
+.cs-container-header,.argus-tester-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0;padding:12px 20px;background:var(--ui-color-background-container-header);border-bottom:1px solid var(--ui-color-border-divider-default)}
+.cs-container-header h2,.argus-tester-header h2,.argus-noevd-panel h2,.argus-legacy-panel h2{margin:0;font-size:var(--ui-font-size-heading-l);line-height:var(--ui-line-height-heading-l);font-weight:var(--ui-font-weight-heading-l);color:var(--ui-color-text-heading-default);text-transform:none;letter-spacing:0}
+.cs-container-header p{margin:2px 0 0;color:var(--ui-color-text-body-secondary);font-size:14px;width:100%}
+.argus-noevd-panel{padding:12px 20px 16px} .argus-noevd-sub{color:var(--ui-color-text-body-secondary)}
+
+/* Overview: key-value pairs */
+.argus-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;padding:16px 20px 18px;margin:0;background:none;border:none;box-shadow:none;border-radius:0}
+.argus-stat{background:none;border:none;border-left:1px solid var(--ui-color-border-divider-secondary);border-radius:0;padding:2px 16px;text-align:left;cursor:pointer}
+.argus-stat:first-child{border-left:none;padding-left:0}
+.argus-stat:hover .argus-stat-value{text-decoration:underline}
+.argus-stat-label{font-size:14px;line-height:20px;font-weight:700;color:var(--ui-color-text-label);text-transform:none;letter-spacing:0}
+.argus-stat-value{font-size:30px;line-height:36px;font-weight:700;color:var(--ui-color-text-body-default);margin-top:2px}
+.argus-stat-pass{color:var(--ui-color-text-status-success)} .argus-stat-concerns{color:var(--ui-color-text-status-warning)} .argus-stat-fail{color:var(--ui-color-text-status-error)}
+
+/* ---- Tables ---- */
+.argus-tester-table,.argus-table{width:100%;border-collapse:collapse;font-size:14px;line-height:20px;background:none;border:none;box-shadow:none;border-radius:0}
+.argus-tester-table th,.argus-table thead th{text-align:left;font-size:14px;font-weight:700;color:var(--ui-color-text-body-default);text-transform:none;letter-spacing:0;padding:8px 16px;background:var(--ui-color-background-container-content);border-bottom:1px solid var(--ui-color-border-divider-default)}
+.argus-tester-table th:first-child,.argus-table thead th:first-child,.argus-tester-table td:first-child,.argus-table td:first-child{padding-left:20px}
+.argus-tester-table td,.argus-table td{padding:8px 16px;border-bottom:1px solid var(--ui-color-border-divider-secondary);vertical-align:top}
+.argus-tester-table tbody tr:last-child td{border-bottom:none}
+.argus-tester-table tbody tr:hover td,tr.argus-row:hover td{background:var(--ui-color-background-cell-shaded)}
+.argus-table thead th{position:sticky;top:40px;z-index:5}
+.argus-sortable[aria-sort="ascending"]::after{content:" ↑";color:var(--ui-color-text-link-default)}
+.argus-sortable[aria-sort="descending"]::after{content:" ↓";color:var(--ui-color-text-link-default)}
+.argus-detail td{background:var(--ui-color-background-cell-shaded)}
+
+/* ---- Filters (inside the audits container) ---- */
+.argus-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 20px;margin:0;background:none;border:none;border-bottom:1px solid var(--ui-color-border-divider-default);border-radius:0;box-shadow:none;position:static}
+.argus-input,.argus-select{font-size:14px;line-height:20px;border:2px solid var(--ui-color-border-input-default);border-radius:var(--ui-border-radius-input);padding:4px 12px;height:32px;background:var(--ui-color-background-input-default);color:var(--ui-color-text-body-default)}
+.argus-input{min-width:340px}
+.argus-input:focus,.argus-select:focus{outline:none;border-color:var(--ui-color-border-item-focused);box-shadow:0 0 0 2px rgba(0,108,224,.25)}
+.argus-toggle{font-size:14px;display:inline-flex;align-items:center;gap:6px}
+input[type=checkbox]{accent-color:var(--ui-color-background-button-primary-default);width:16px;height:16px}
+.argus-count{color:var(--ui-color-text-counter);margin-left:auto}
+
+/* Run selection stays compact; the complete overview lives in a modal drawer. */
+.argus-run-picker{flex:0 1 360px;min-width:0;max-width:100%}
+#argus-run-picker-open{display:flex;align-items:center;gap:8px;width:100%;height:36px;text-align:left;cursor:pointer}
+.argus-run-picker-prefix{flex:none;color:var(--ui-color-text-body-secondary)}
+#argus-run-picker-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.argus-run-picker-panel{position:fixed;z-index:1100;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--ui-color-background-container-content);border:2px solid var(--ui-color-border-input-default);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.2);overflow:hidden}
+.argus-run-picker-panel .argus-input{width:100%;min-width:0;box-sizing:border-box;flex:none}
+#argus-run-picker-options{list-style:none;padding:0;margin:0;overflow-y:auto;overscroll-behavior:contain;min-height:0}
+#argus-run-picker-options li{padding:10px 12px;overflow-wrap:anywhere;border-radius:4px;cursor:pointer;line-height:20px}
+#argus-run-picker-options li[aria-selected="true"]{font-weight:700;color:var(--ui-color-text-link-default)}
+#argus-run-picker-options li:hover,.argus-run-option-active{background:var(--ui-color-background-item-selected)}
+.argus-run-option-active{outline:2px solid var(--ui-color-border-item-focused);outline-offset:-2px}
+#argus-run-picker-empty{margin:4px 0;font-size:14px;color:var(--ui-color-text-body-secondary)}
+
+/* Custom date-range pickers: two independent from/to pairs (execution date +
+   audit date). Collapsed behind a <summary> pill so the four inputs stay out
+   of the way until a reviewer opens them; the panel floats over the bar. */
+.argus-daterange{position:relative}
+.argus-daterange-summary{display:inline-flex;align-items:center;height:32px;cursor:pointer;list-style:none;white-space:nowrap}
+.argus-daterange-summary::-webkit-details-marker{display:none}
+.argus-daterange-summary::after{content:"\25be";margin-left:6px;color:var(--ui-color-text-body-secondary)}
+.argus-daterange[open] .argus-daterange-summary{border-color:var(--ui-color-border-item-focused)}
+.argus-daterange-panel{position:absolute;z-index:1100;top:calc(100% + 6px);left:0;display:flex;flex-direction:column;gap:10px;padding:12px;background:var(--ui-color-background-container-content);border:2px solid var(--ui-color-border-input-default);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.argus-daterange-group{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.argus-daterange-label{flex:0 0 96px;font-size:13px;color:var(--ui-color-text-body-secondary)}
+.argus-daterange-sep{color:var(--ui-color-text-body-secondary)}
+.argus-daterange-panel .argus-input{min-width:0;width:150px}
+.argus-run-picker[hidden],.argus-run-picker-panel[hidden],.argus-run-card[hidden],#argus-runs-open[hidden]{display:none}
+#argus-runs-open{white-space:nowrap}
+.argus-runs-drawer{position:fixed;inset:0 0 0 auto;box-sizing:border-box;margin:0;padding:0;width:min(640px,100%);max-width:100vw;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border:0;border-left:1px solid var(--ui-color-border-divider-default);background:var(--ui-color-background-container-content);color:var(--ui-color-text-body-default);box-shadow:-4px 0 24px rgba(0,0,0,.2);overflow:hidden}
+.argus-runs-drawer[open]{display:flex;flex-direction:column}
+.argus-runs-drawer:not([open]){display:none}
+.argus-runs-drawer::backdrop{background:rgba(0,0,0,.4)}
+body.argus-runs-open{overflow:hidden}
+.argus-runs-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--ui-color-background-container-header);border-bottom:1px solid var(--ui-color-border-divider-default);flex:none}
+.argus-runs-header h2{margin:0;font-size:24px;line-height:32px}
+.argus-runs-close{width:44px;height:44px;flex:none;border:0;border-radius:50%;background:none;color:var(--ui-color-text-body-default);font-size:28px;cursor:pointer}
+.argus-runs-close:hover{background:var(--ui-color-background-item-selected)}
+.argus-runs-close:focus-visible{outline:2px solid var(--ui-color-border-item-focused)}
+.argus-runs-tools{padding:16px 20px;border-bottom:1px solid var(--ui-color-border-divider-secondary);flex:none}
+.argus-runs-tools label{display:block;font-weight:700;margin-bottom:8px}
+.argus-runs-tools .argus-input{width:100%;min-width:0;box-sizing:border-box}
+.argus-runs-tools-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}
+.argus-runs-tools p{font-size:13px;line-height:18px;color:var(--ui-color-text-body-secondary);margin:12px 0 0}
+#argus-runs-count{color:var(--ui-color-text-body-secondary);font-size:14px}
+.argus-runs-scroll{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1}
+.argus-run-cards{list-style:none;margin:0;padding:0}
+.argus-run-card{padding:20px;border-bottom:1px solid var(--ui-color-border-divider-secondary);border-left:3px solid transparent}
+.argus-run-card.argus-run-selected{border-left-color:var(--ui-color-border-item-selected);background:var(--ui-color-background-item-selected)}
+.argus-run-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 16px;margin:16px 0}
+.argus-run-counts dt{font-size:13px;color:var(--ui-color-text-body-secondary)}
+.argus-run-counts dd{margin:2px 0 0;font-size:20px;line-height:24px;font-weight:700}
+.argus-run-select{padding:0;border:none;background:none;color:var(--ui-color-text-link-default);font:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.argus-run-card>.argus-run-select{font-weight:700;line-height:22px}
+.argus-run-select:hover{text-decoration:underline}
+#argus-run{max-width:min(100%,420px);text-overflow:ellipsis}
+.argus-table .argus-run-heading>td{padding:0;background:var(--ui-color-background-container-header);border-top:1px solid var(--ui-color-border-divider-default)}
+.argus-run-toggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;padding:12px 20px;border:none;background:none;text-align:left;font:inherit;color:var(--ui-color-text-body-default);cursor:pointer}
+.argus-run-toggle strong{min-width:0;overflow-wrap:anywhere}
+.argus-run-totals{margin-left:auto;font-size:12px;font-weight:400;color:var(--ui-color-text-body-secondary)}
+.argus-table .argus-day-heading>td{padding:10px 16px;background:var(--ui-color-background-container-header)}
+.argus-day-heading .argus-run-totals{margin-left:16px}
+.argus-run-chevron{display:inline-block;transition:transform .12s}
+.argus-run-toggle[aria-expanded="false"] .argus-run-chevron{transform:rotate(-90deg)}
+.argus-run-select:focus-visible,.argus-run-toggle:focus-visible{outline:2px solid var(--ui-color-border-item-focused);outline-offset:-2px}
+.argus-no-matches{padding:20px;text-align:center;color:var(--ui-color-text-body-secondary)}
+@media(max-width:700px){.argus-run-totals{margin-left:24px;width:100%}.argus-run-heading{display:table-row}.argus-run-heading>td{display:block}.argus-runs-header,.argus-runs-tools,.argus-run-card{padding-left:16px;padding-right:16px}}
+@media(max-width:420px){.cs-topnav{padding-left:8px;padding-right:8px}.cs-util{padding-left:6px;padding-right:6px}.cs-util-sep{margin-left:2px;margin-right:2px}}
+
+/* ---- Status indicators (verdicts) ---- */
+.argus-badge[class*="argus-verdict-"]{background:none;border:none;border-radius:0;padding:0;font-size:14px;line-height:20px;font-weight:400;display:inline-flex;align-items:center;gap:4px;letter-spacing:0;text-transform:none}
+.argus-badge[class*="argus-verdict-"]::before{content:"";width:16px;height:16px;flex:none;background:center/contain no-repeat}
+.argus-verdict-pass{color:var(--ui-color-text-status-success)} .argus-verdict-pass::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2300802f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M5 8.3l2 2 4-4.5'/%3E%3C/svg%3E")}
+.argus-verdict-concerns{color:var(--ui-color-text-status-warning)} .argus-verdict-concerns::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23855900' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2 14.5 14H1.5z'/%3E%3Cpath d='M8 6.5v3.2M8 12v.2'/%3E%3C/svg%3E")}
+.argus-verdict-fail{color:var(--ui-color-text-status-error)} .argus-verdict-fail::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23db0000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M5.5 5.5l5 5M10.5 5.5l-5 5'/%3E%3C/svg%3E")}
+
+/* ---- Badges: severity, status, marketplace ---- */
+.argus-pill,.argus-status-pill,.argus-mini-pill,.argus-mp-badge,.argus-noevd-badge,.argus-na-badge,.argus-blocked-badge{display:inline-block;border-radius:var(--ui-border-radius-badge);font-size:12px;line-height:18px;font-weight:700;padding:0 8px;border:none;letter-spacing:0;text-transform:none}
+.argus-pill-high{background:var(--ui-color-background-notification-severity-high);color:var(--ui-color-text-badge-severity-high)}
+.argus-pill-medium{background:var(--ui-color-background-notification-severity-medium);color:var(--ui-color-text-badge-severity-medium)}
+.argus-pill-low{background:var(--ui-color-background-notification-severity-low);color:var(--ui-color-text-badge-severity-low)}
+.argus-status-pill,.argus-mp-badge,.argus-na-badge,.argus-blocked-badge{background:var(--ui-color-background-badge-grey);color:var(--ui-color-text-badge-grey)}
+.argus-status-pass{background:var(--ui-color-background-badge-green)} .argus-status-fail,.argus-noevd-badge{background:var(--ui-color-background-badge-red);color:#f9f9fa}
+.argus-status-pwi{background:#79f2c0;color:#14532d} .argus-status-blocked{background:var(--ui-color-background-badge-blue);color:#f9f9fa} .argus-status-inprogress{background:var(--ui-color-background-badge-yellow);color:#0f141a} .argus-status-na,.argus-status-notexecuted,.argus-status-neutral{background:var(--ui-color-background-badge-grey);color:#f9f9fa}
+.argus-mini-pass{background:var(--ui-color-background-badge-green);color:#f9f9fa} .argus-mini-concerns{background:var(--ui-color-background-badge-yellow);color:#0f141a} .argus-mini-fail{background:var(--ui-color-background-badge-red);color:#f9f9fa}
+
+/* ---- Tokens (per-tester issue chips) ---- */
+.argus-issue-chip{display:inline-flex;align-items:center;gap:6px;background:var(--ui-color-background-input-default);border:2px solid var(--ui-color-border-item-selected);border-radius:var(--ui-border-radius-token);color:var(--ui-color-text-body-default);font-size:14px;line-height:20px;padding:1px 8px;margin:0 4px 4px 0;cursor:pointer;text-align:left}
+.argus-issue-chip:hover{background:var(--ui-color-background-item-selected)}
+.argus-issue-chip.argus-issue-chip-active{background:var(--ui-color-background-item-selected);border-color:var(--ui-color-text-link-hover);color:var(--ui-color-text-link-hover);font-weight:700}
+.argus-issue-count{background:var(--ui-color-background-badge-grey);color:var(--ui-color-text-badge-grey);border-radius:var(--ui-border-radius-badge);padding:0 6px;font-size:12px;line-height:18px;font-weight:700}
+.argus-issue-chip.argus-issue-chip-active .argus-issue-count{background:var(--ui-color-background-badge-blue)}
+.argus-issue-list{gap:4px}
+
+/* ---- Findings as alerts ---- */
+.argus-finding{border-radius:var(--ui-border-radius-alert);border:2px solid var(--ui-color-border-divider-default);background:var(--ui-color-background-container-content);padding:8px 12px;border-left-width:2px}
+.argus-finding-high{border-color:var(--ui-color-border-status-error);background:var(--ui-color-background-status-error)}
+.argus-finding-medium{border-color:var(--ui-color-border-status-warning);background:var(--ui-color-background-status-warning)}
+.argus-finding-low{border-color:var(--ui-color-border-status-info);background:var(--ui-color-background-status-info)}
+.argus-finding-headline{font-weight:700}
+
+.cs-topnav{height:48px}
+.argus-table thead th{top:48px}
+.application-layout{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:calc(100vh - 48px)}
+.application-layout.nav-collapsed{grid-template-columns:minmax(0,1fr)}
+.application-layout.nav-collapsed .side-navigation{display:none}
+.side-navigation{position:sticky;top:48px;height:calc(100vh - 48px);padding:16px 12px;overflow-y:auto;border-right:1px solid var(--ui-color-border-divider-default);background:var(--ui-color-background-container-content)}
+.side-navigation-header{display:flex;align-items:center;justify-content:space-between;padding:0 8px 13px;border-bottom:1px solid var(--ui-color-border-divider-secondary)}
+.side-navigation-title{font-size:16px;font-weight:700}
+.nav-collapse{background:none;border:none;color:var(--ui-color-text-interactive-default);font-size:18px;cursor:pointer;padding:0 6px;border-radius:4px}
+.nav-collapse:hover{background:var(--ui-color-background-cell-shaded);color:var(--ui-color-text-interactive-hover)}
+.side-navigation nav{display:flex;flex-direction:column;gap:2px;padding-top:12px}
+.nav-link{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:4px;color:var(--ui-color-text-body-secondary);text-decoration:none;font-size:14px;line-height:20px}
+.nav-link:hover{background:var(--ui-color-background-cell-shaded);color:var(--ui-color-text-body-default);text-decoration:none}
+.nav-link-active{color:var(--ui-color-text-link-default);font-weight:700;background:var(--ui-color-background-item-selected)}
+.nav-icon{width:16px;text-align:center;opacity:.8}
+.nav-divider{margin:12px 8px;border-top:1px solid var(--ui-color-border-divider-secondary)}
+.nav-section-label{margin:0 0 4px;padding:0 8px;font-size:12px;font-weight:700;color:var(--ui-color-text-counter);text-transform:uppercase;letter-spacing:.3px}
+.nav-utility-divider{margin-top:14px}
+.nav-utility-link{gap:4px}
+.nav-external{font-size:12px}
+.preview-note{margin-top:auto;position:sticky;bottom:0;display:flex;flex-direction:column;gap:3px;padding:11px 12px;border:1px solid var(--ui-color-border-divider-default);border-radius:8px;background:var(--ui-color-background-cell-shaded);font-size:12px;line-height:16px;color:var(--ui-color-text-body-secondary)}
+.side-navigation{display:flex;flex-direction:column}
+.argus-main.main-content{min-width:0;padding:20px 28px 48px}
+.cs-content,.argus-main{max-width:none;margin:0;padding:0}
+.cs-crumbs{font-size:13px}
+.page-eyebrow{display:block;font-size:12px;font-weight:700;color:var(--ui-color-text-counter);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.cs-header h1{font-size:28px;line-height:34px}
+.metadata-row{display:flex;flex-wrap:wrap;gap:8px 22px;margin:14px 0 20px;color:var(--ui-color-text-body-secondary);font-size:13px}
+.metadata-row strong{color:var(--ui-color-text-body-default);margin-right:4px}
+/* no-evidence panel rendered as the prototype's flashbar (error) */
+/* Audit summary metrics */
+.argus-stats{grid-template-columns:repeat(5,minmax(0,1fr));padding:0}
+.argus-stat{padding:15px 20px 16px;border-left:none;border-right:1px solid var(--ui-color-border-divider-secondary);border-bottom:3px solid transparent}
+.argus-stat:first-child{padding-left:20px} .argus-stat:last-child{border-right:none}
+.argus-stat:hover{border-bottom-color:var(--ui-color-border-item-selected)} .argus-stat:hover .argus-stat-value{text-decoration:none}
+.argus-stat-label{color:var(--ui-color-text-body-secondary);font-size:13px}
+.argus-stat-value{font-size:28px;line-height:34px}
+.metric-description{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ui-color-text-body-secondary);margin-top:2px}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--ui-color-text-status-inactive)}
+.status-dot.positive{background:var(--ui-color-text-status-success)} .status-dot.warning{background:var(--ui-color-text-status-warning)} .status-dot.negative{background:var(--ui-color-text-status-error)}
+.cs-coverage-stat .argus-stat-value{color:var(--ui-color-text-link-default)} .cs-coverage-stat:hover{border-bottom-color:var(--ui-color-border-item-selected)}
+/* content grid */
+.content-grid{display:grid;align-items:start;grid-template-columns:minmax(0,1fr) 340px;gap:16px}
+.content-grid > .cs-container{margin-bottom:0}
+.right-column{display:flex;flex-direction:column;gap:16px;min-width:0}
+.right-column .cs-container,.right-column .argus-tester-panel{margin:0}
+/* tester overview: the per-tester table rendered as a stacked list */
+.argus-tester-header{padding:16px 20px;align-items:flex-start}
+.argus-tester-header h2{font-size:18px;line-height:22px}
+.argus-tester-header .cs-container-desc{margin:2px 0 0;color:var(--ui-color-text-body-secondary);font-size:14px;width:100%}
+#argus-issues-toggle-all{padding:0 12px;font-size:12px;line-height:18px}
+.argus-tester-table,.argus-tester-table tbody{display:block}
+.argus-tester-table thead{display:none}
+.argus-tester-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"name exec aud" "verd verd verd" "issues issues issues";gap:4px 10px;padding:12px 20px;border-bottom:1px solid var(--ui-color-border-divider-secondary)}
+.argus-tester-table tbody tr:last-child{border-bottom:none}
+.argus-tester-table tbody tr:hover{background:var(--ui-color-background-cell-shaded)} .argus-tester-table tbody tr:hover td{background:none}
+.argus-tester-table td{display:block;padding:0;border:none;text-align:left}
+.argus-tester-table td:nth-child(1){grid-area:name} .argus-tester-table td:nth-child(1) .argus-tester-link{font-weight:700;color:var(--ui-color-text-body-default)}
+.argus-tester-table td:nth-child(2){grid-area:exec;font-size:13px;color:var(--ui-color-text-body-secondary)} .argus-tester-table td:nth-child(2)::after{content:" executions"}
+.argus-tester-table td:nth-child(3){grid-area:aud;font-size:13px;color:var(--ui-color-text-body-secondary)} .argus-tester-table td:nth-child(3)::after{content:" audited"}
+.argus-tester-table td:nth-child(4){grid-area:verd;white-space:normal} .argus-tester-bar{display:flex;width:100%;height:8px;border-radius:4px;overflow:hidden;background:var(--ui-color-border-divider-secondary);margin:2px 0 6px}
+.argus-tbar-pass{background:var(--ui-color-text-status-success)} .argus-tbar-concerns{background:var(--ui-color-background-badge-yellow)} .argus-tbar-fail{background:var(--ui-color-text-status-error)}
+.argus-tester-table td:nth-child(5){grid-area:issues;padding-top:4px}
+/* coverage card */
+.coverage-body{padding:16px 20px}
+.coverage-value{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.coverage-value strong{font-size:28px;line-height:34px} .coverage-value span{color:var(--ui-color-text-body-secondary);font-size:13px}
+.progress-track{height:8px;margin-top:8px;overflow:hidden;border-radius:4px;background:var(--ui-color-border-divider-secondary)}
+.progress-fill{display:block;height:100%;background:var(--ui-color-background-button-primary-default)}
+.coverage-details{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:16px 0 0}
+.coverage-details dt{font-size:13px;color:var(--ui-color-text-body-secondary)} .coverage-details dd{margin:0;font-weight:700}
+.container-footer-link{display:block;padding:12px 20px;border-top:1px solid var(--ui-color-border-divider-secondary);text-decoration:none;font-weight:700}
+.argus-coverage-trigger{font:inherit}
+/* ---- fixes after the first screenshots ---- */
+/* the original fixes the coverage trigger to the viewport; in the page header it is a normal button */
+.cs-actions .argus-coverage-trigger{position:static;top:auto;right:auto;z-index:auto;filter:none;box-shadow:none;margin:0;background:var(--ui-color-background-button-normal-default);color:var(--ui-color-text-button-normal-default);border:2px solid var(--ui-color-border-button-normal-default);font-size:14px;font-weight:700;padding:4px 20px;gap:8px}
+.cs-actions .argus-coverage-trigger:hover{background:var(--ui-color-background-button-normal-hover);color:var(--ui-color-border-button-normal-hover);border-color:var(--ui-color-border-button-normal-hover)}
+.cs-actions .argus-coverage-trigger-count{background:var(--ui-color-background-badge-grey);color:#f9f9fa;border-radius:4px;padding:0 6px;font-size:12px}
+/* the report's monospace / uppercase theme does not belong in ARGUS */
+.argus-main,.argus-main button,.argus-main select,.argus-main input,.argus-main th,.argus-main td,.argus-main h2,.argus-main h3,.argus-main label,.argus-main span,.argus-main a,.argus-main p,.argus-main li,.argus-main div{font-family:var(--ui-font-family-base);text-transform:none;letter-spacing:0}
+.argus-main code,.argus-main pre,.argus-main .argus-key-link{font-family:var(--ui-font-family-monospace)}
+.argus-main .argus-key-link{font-size:13px}
+/* no-evidence alert: keep the original inner layout, restyle the shell as a ARGUS error flash */
+/* No-evidence alert: ARGUS error alert; content indented under the title, one aligned row per tester. */
+.argus-noevd-panel{--cs-noevd-divider:rgba(219,0,0,.16);display:block;position:relative;padding:12px 44px 12px 16px;border:2px solid var(--ui-color-border-status-error);border-left-width:2px;border-radius:var(--ui-border-radius-flashbar);background:var(--ui-color-background-status-error);overflow:visible;box-shadow:none;margin:0 0 20px}
+html[data-cs-theme="dark"] .argus-noevd-panel{--cs-noevd-divider:rgba(255,122,122,.28)}
+.argus-noevd-panel::before{display:none}
+.argus-noevd-panel>*{position:static}
+.argus-noevd-header{display:flex;align-items:flex-start;gap:12px;margin:0 0 4px}
+.argus-noevd-icon{flex:none;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--ui-color-text-status-error);color:#fff;font-size:12px;line-height:1;font-weight:700;font-family:var(--ui-font-family-base);margin-top:2px}
+.argus-noevd-header h2{font-family:inherit;font-size:16px;line-height:22px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--ui-color-text-status-error);margin:0 0 2px}
+.argus-noevd-sub{font-size:14px;line-height:20px;color:var(--ui-color-text-body-default);margin:0}
+.argus-noevd-list{list-style:none;margin:8px 0 0 30px;padding:0;display:flex;flex-direction:column;gap:0;border-top:1px solid var(--cs-noevd-divider)}
+.argus-noevd-list li{display:grid;grid-template-columns:minmax(150px,220px) 60px minmax(0,1fr);column-gap:12px;align-items:start;padding:8px 0;margin:0;border-bottom:1px solid var(--cs-noevd-divider);font-size:14px;line-height:20px}
+.argus-noevd-list li:last-child{border-bottom:0;padding-bottom:2px}
+.argus-noevd-tester{font-family:inherit;font-size:14px;line-height:20px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--ui-color-text-body-default);min-width:0;overflow-wrap:anywhere}
+.argus-noevd-count{font-family:inherit;font-size:13px;line-height:20px;letter-spacing:0;color:var(--ui-color-text-body-secondary);white-space:nowrap}
+.argus-noevd-keys{display:flex;flex-wrap:wrap;gap:6px 8px;min-width:0;padding-top:1px}
+.argus-noevd-key{background:var(--ui-color-background-container-content);border:1px solid var(--ui-color-border-status-error);color:var(--ui-color-text-status-error);border-radius:4px;padding:0 8px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:0;font-family:var(--ui-font-family-base);transition:none;cursor:pointer}
+.argus-noevd-key:hover{background:var(--ui-color-text-status-error);color:#fff}
+.argus-noevd-key:focus-visible{outline:2px solid var(--ui-color-border-item-focused);outline-offset:1px}
+.argus-noevd-close{top:10px;right:10px;color:var(--ui-color-text-status-error);background:none;border:none;font-size:18px;border-radius:4px}
+.argus-noevd-close:hover{background:var(--ui-color-text-status-error);color:#fff;border-color:transparent}
+@media (max-width:720px){.argus-noevd-list{margin-left:0}.argus-noevd-list li{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}.argus-noevd-keys{grid-column:1 / -1}}
+/* verdict status-indicator icons: same specificity as the shorthand that was wiping them */
+.argus-badge.argus-verdict-pass::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2300802f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M5 8.3l2 2 4-4.5'/%3E%3C/svg%3E")}
+.argus-badge.argus-verdict-concerns::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23855900' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2 14.5 14H1.5z'/%3E%3Cpath d='M8 6.5v3.2M8 12v.2'/%3E%3C/svg%3E")}
+.argus-badge.argus-verdict-fail::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23db0000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M5.5 5.5l5 5M10.5 5.5l-5 5'/%3E%3C/svg%3E")}
+/* issue chips must wrap inside a column */
+.argus-issue-chip{white-space:normal;max-width:100%;text-align:left}
+.argus-issues-compact{display:flex;flex-wrap:wrap;gap:4px} .argus-issues-compact .argus-issue-chip{margin:0}
+/* tester overview as cards: one column in the side column, a grid when it spans the page */
+.argus-tester-table tbody{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;padding:16px 20px}
+.argus-tester-table tr{border:1px solid var(--ui-color-border-divider-secondary);border-radius:8px;padding:12px 16px;background:var(--ui-color-background-container-content)}
+.argus-tester-table tbody tr:last-child{border-bottom:1px solid var(--ui-color-border-divider-secondary)}
+.argus-tester-table tbody tr:hover{background:var(--ui-color-background-container-content);border-color:var(--ui-color-border-divider-default)}
+.argus-tester-table td:nth-child(1) .argus-tester-link{font-size:14px}
+/* the audits table must never be clipped */
+.cs-audits{overflow:visible} .cs-audits .cs-container-header{border-radius:16px 16px 0 0}
+/* content grid: two columns only when the table still has room; otherwise testers + coverage sit above the table */
+.content-grid{grid-template-columns:minmax(0,1fr) 340px;align-items:start}
+/* Tester column: no scrollbar of its own. Sticky at the top while it fits; when taller than the
+   viewport argus.js flips it between top- and bottom-stuck with the scroll direction. */
+.right-column{order:0;display:flex;flex-direction:column;gap:16px;position:sticky;top:60px;align-self:start;max-height:none;overflow:visible;padding-right:0}
+.right-column .argus-tester-panel{min-width:0;flex:none} .right-column .cs-container{flex:none}
+/* compact tester rows for the narrow column */
+.argus-tester-table tr{padding:8px 16px;column-gap:8px}
+.argus-tester-table td:nth-child(2),.argus-tester-table td:nth-child(3){font-size:11px}
+.argus-tester-table td:nth-child(2)::after{content:" exec"} .argus-tester-table td:nth-child(3)::after{content:" aud"}
+.right-column .argus-issue-chip{font-size:12px;line-height:16px;padding:1px 7px;gap:4px;border-width:1px;border-radius:6px}
+.right-column .argus-issue-count{font-size:11px;line-height:16px;padding:0 5px}
+.right-column .argus-issue-sev{width:6px;height:6px;margin-right:0}
+.right-column .argus-tester-header,.right-column .cs-container-header{padding:12px 16px} .right-column .argus-tester-header h2,.right-column .cs-container-header h2{font-size:16px;line-height:20px}
+.right-column .coverage-body{padding:12px 16px} .right-column .coverage-value strong{font-size:24px;line-height:30px}
+/* audits table fits the remaining width: fixed layout, truncating long test-case text */
+.argus-table{table-layout:fixed;width:100%}
+.argus-table thead th:nth-child(1){width:156px} .argus-table thead th:nth-child(2){width:134px} .argus-table thead th:nth-child(3){width:104px} .argus-table thead th:nth-child(4){width:126px} .argus-table thead th:nth-child(6){width:108px}
+.argus-table td{overflow-wrap:normal;word-break:normal} .argus-badge[class*="argus-verdict-"]{white-space:nowrap} .argus-tester-name{white-space:normal}
+.argus-tc{min-width:0} .argus-tc-run,.argus-tc-name{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* tester card header: name on its own line, counts below it */
+.argus-tester-table tr{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name name" "exec aud" "verd verd" "issues issues";gap:2px 12px}
+.argus-tester-table td:nth-child(2),.argus-tester-table td:nth-child(3){font-size:13px;line-height:18px}
+.argus-tester-table td:nth-child(3){justify-self:start}
+.argus-tester-table td:nth-child(4){margin-top:4px}
+.argus-main .argus-num,.argus-main table td.argus-num,.argus-main .argus-tester-table td.argus-num,.argus-main .argus-verdict-mini,.argus-main .argus-finding-count{font-family:var(--ui-font-family-base)}
+/* severity pills in the Findings column and finding cards: solid ARGUS severity badges */
+.argus-main .argus-pill.argus-pill-high{background:var(--ui-color-background-notification-severity-high);color:var(--ui-color-text-badge-severity-high);border:none;opacity:1}
+.argus-main .argus-pill.argus-pill-medium{background:var(--ui-color-background-notification-severity-medium);color:var(--ui-color-text-badge-severity-medium);border:none;opacity:1}
+.argus-main .argus-pill.argus-pill-low{background:var(--ui-color-background-notification-severity-low);color:var(--ui-color-text-badge-severity-low);border:none;opacity:1}
+/* alert dismiss lives in the corner */
+.argus-noevd-panel .argus-noevd-close{position:absolute;top:10px;right:10px;width:auto;height:auto;padding:2px 6px;line-height:1;cursor:pointer}
+/* coverage drawer: no dimmed page behind it (ARGUS drawers do not use a scrim) */
+.argus-coverage-backdrop{background:transparent}
+.argus-coverage-drawer{box-shadow:-4px 0 16px rgba(0,7,22,.18);border-left:1px solid var(--ui-color-border-divider-default)}
+/* nothing moves on hover */
+.argus-stat:hover,.argus-bookmark:hover,.argus-bookmark.argus-bookmarked:hover,.argus-row:hover,.argus-issue-chip:hover{transform:none}
+/* tester overview: the prototype's compact list — name, audited count, stacked bar; chevron expands that tester's issues */
+.argus-tester-header{border-bottom:1px solid var(--ui-color-border-divider-default);padding:14px 20px}
+#argus-issues-toggle-all,.argus-issues-more,.argus-issues-fewer{display:none !important}
+.argus-tester-table tbody{display:block;padding:0}
+.argus-tester-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto 28px;grid-template-areas:"name exec aud chev" "verd verd verd verd" "issues issues issues issues";align-items:center;column-gap:12px;row-gap:0;padding:10px 20px;border:none;border-bottom:1px solid var(--ui-color-border-divider-secondary);border-radius:0;background:var(--ui-color-background-container-content)}
+.argus-tester-table tbody tr:last-child{border-bottom:none}
+.argus-tester-table tbody tr:hover{background:var(--ui-color-background-cell-shaded);border-color:var(--ui-color-border-divider-secondary)}
+.argus-tester-table td:nth-child(1){grid-area:name;min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:18px}
+.argus-tester-table td:nth-child(1) .argus-tester-link{font-size:13px;font-weight:700;color:var(--ui-color-text-body-default);border:none;padding:0;background:none}
+.argus-tester-table td:nth-child(1) .argus-tester-link:hover{color:var(--ui-color-text-link-default);text-decoration:underline}
+.argus-tester-table td:nth-child(2){grid-area:exec;font-size:12px;line-height:18px;color:var(--ui-color-text-body-secondary)}
+.argus-tester-table td:nth-child(3){grid-area:aud;font-size:12px;line-height:18px;color:var(--ui-color-text-body-secondary)}
+.argus-tester-table td.cs-chev{grid-area:chev;justify-self:end}
+.cs-expand{width:28px;height:28px;border:none;background:none;border-radius:14px;color:var(--ui-color-text-interactive-default);cursor:pointer;font-size:12px;line-height:1}
+.cs-expand:hover{background:var(--ui-color-background-container-content);color:var(--ui-color-text-interactive-hover);box-shadow:inset 0 0 0 1px var(--ui-color-border-divider-default)}
+.cs-expand::before{content:"\25BC";display:inline-block;transition:transform .12s}
+tr.is-open .cs-expand::before{transform:rotate(180deg)}
+.argus-tester-table td:nth-child(4){grid-area:verd;margin-top:6px}
+.argus-tester-bar{display:flex;width:100%;height:6px;border-radius:3px;overflow:hidden;background:var(--ui-color-border-divider-secondary);margin:0}
+.argus-tester-table td:nth-child(4) .argus-mini-pill{display:none}
+tr.is-open td:nth-child(4) .argus-mini-pill{display:inline-block;margin:8px 6px 0 0}
+.argus-tester-table td:nth-child(5){grid-area:issues;display:block;padding-top:8px}
+.argus-issues-compact{display:flex;flex-wrap:wrap;gap:6px}
+.argus-issues-cell .argus-issues-full{display:none !important}
+tr.is-open .argus-issues-cell .argus-issues-full{display:block !important}
+tr.is-open .argus-issues-compact{display:none}
+.argus-issue-list{flex-direction:row;flex-wrap:wrap;gap:6px}
+.argus-issue-list .argus-issue-chip{white-space:nowrap}
+/* pagination (50 rows per page) */
+.cs-pagination{display:flex;align-items:center;gap:2px;margin-left:auto}
+.cs-page{min-width:28px;height:28px;padding:0 6px;border:none;background:none;border-radius:14px;font:inherit;font-size:14px;color:var(--ui-color-text-body-default);cursor:pointer}
+.cs-page:hover{background:var(--ui-color-background-cell-shaded)}
+.cs-page[aria-current="page"]{font-weight:700;color:var(--ui-color-text-link-default)}
+.cs-page:disabled{color:var(--ui-color-text-status-inactive);cursor:default;background:none}
+.cs-page-gap{color:var(--ui-color-text-counter);padding:0 2px}
+
+/* Override the desktop scroll tracker's inline position after viewport resizing. */
+@media (max-width:1250px){.application-layout{grid-template-columns:minmax(0,1fr)} .side-navigation{display:none} .content-grid{grid-template-columns:minmax(0,1fr)} .right-column{position:static!important;top:auto!important;max-height:none;order:-1;display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr)}}
+@media (max-width:1250px){.application-layout.nav-open::before{content:"";position:fixed;inset:48px 0 0;background:rgba(0,7,22,.4);z-index:1090}.application-layout.nav-open .side-navigation{display:flex;position:fixed;top:48px;left:0;width:250px;max-width:85vw;z-index:1100;box-shadow:4px 0 20px rgba(0,7,22,.2)}}
+@media (max-width:700px){.argus-main.main-content{padding:16px 12px 36px}.cs-header{display:block}.cs-actions{margin:12px 0 0}.argus-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.argus-stat{border-bottom:1px solid var(--ui-color-border-divider-secondary)}.right-column{display:block}.right-column>.cs-container,.right-column>.argus-tester-panel{margin-bottom:16px}}
+.argus-chip{background:var(--ui-color-background-container-content);border:1px solid var(--ui-color-border-divider-default);border-radius:4px;font-size:12px;line-height:18px;padding:0 6px}
+
+/* product adjustments */
+.preview-note{display:none}
+.argus-coverage-trigger{position:static}
+.cs-folders{table-layout:fixed;width:100%}
+.cs-folders td,.cs-folders th{padding:10px 20px}
+.cs-folders td:first-child{overflow-wrap:anywhere}
+.argus-table.cs-folders thead th:nth-child(1){width:auto}
+.argus-table.cs-folders thead th:nth-child(2){width:120px}
+.argus-table.cs-folders thead th:nth-child(3){width:150px}
+.argus-table.cs-folders thead th:nth-child(4){width:120px}
+.cs-folders thead th.argus-num,.cs-folders td.argus-num{text-align:right;font-variant-numeric:tabular-nums}
+.cs-folders .cs-btn{padding:1px 14px;font-size:13px}
+.argus-report-toolbar{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:12px 20px;background:var(--ui-color-background-container-content);border:1px solid var(--ui-color-border-divider-default);border-radius:var(--ui-border-radius-container);box-shadow:var(--cs-shadow)}
+.argus-report-search{flex:1;min-width:240px;max-width:560px}
+.argus-report-search-count{margin-left:auto;color:var(--ui-color-text-counter);white-space:nowrap}
+.argus-report-no-results{margin-bottom:16px}
+.argus-report-no-results .cs-card-body{min-height:0}
+/* Sortable header: label and sort indicator stay on one line so every header sits on the same baseline. */
+.argus-table thead th .argus-th-btn{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;max-width:100%}
+.argus-table thead th .argus-sort-indicator{flex:none;display:inline-block;width:10px;min-width:0;margin:0;font-size:10px;line-height:1}
+.argus-detail-loading{padding:14px 20px;font-size:14px;color:var(--ui-color-text-body-secondary)}
+.argus-detail-error{color:var(--ui-color-text-status-error)}
+/* Independent subtrees: style/layout/paint work inside them never spills into the rest of the page. */
+.argus-detail,.argus-tester-panel,.argus-noevd-panel{contain:content}
+
+/* Shared report presentation. */
+.argus-badge.argus-verdict-incomplete{color:var(--ui-color-text-status-error)}
+.argus-badge.argus-verdict-incomplete::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23db0000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M8 4.5v4.2M8 11.5v.2'/%3E%3C/svg%3E")}
+.argus-stat-value.argus-stat-incomplete{color:var(--ui-color-text-status-error)}
+.argus-analysis-incomplete{background:var(--ui-color-background-status-error);border-color:var(--ui-color-border-status-error);color:var(--ui-color-text-body-default)}
+.argus-locator-evidence{border-top-color:var(--ui-color-border-divider-secondary)}
+.argus-locator-evidence th,.argus-locator-evidence td{border-bottom-color:var(--ui-color-border-divider-secondary)}
+.argus-mini-incomplete{background:var(--ui-color-background-status-error);color:var(--ui-color-text-status-error)}
+
+/* Folder indexes have six columns: folder, audits, coverage, updated,
+   completion state, and the report action. */
+.argus-table.cs-folders thead th:nth-child(1){width:auto}
+.argus-table.cs-folders thead th:nth-child(2){width:100px}
+.argus-table.cs-folders thead th:nth-child(3){width:180px}
+.argus-table.cs-folders thead th:nth-child(4){width:130px}
+.argus-table.cs-folders thead th:nth-child(5){width:130px}
+.argus-table.cs-folders thead th:nth-child(6){width:110px}
+@media (max-width:700px){.argus-report-toolbar{align-items:stretch;flex-direction:column}.argus-report-search{min-width:0;max-width:none;width:100%}.argus-report-search-count{margin-left:0}}
+.argus-progress-spinner{display:inline-block;vertical-align:middle;width:18px;height:18px;box-sizing:border-box;border:2px solid var(--ui-color-border-divider-default);border-top-color:var(--ui-color-text-status-info);border-radius:50%;animation:argus-progress-spin .8s linear infinite}
+.banner.stale .argus-progress-spinner{animation:none;border-color:var(--ui-color-text-status-error)}
+@keyframes argus-progress-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.argus-progress-spinner{animation:none}}
