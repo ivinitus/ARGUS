@@ -418,6 +418,36 @@ def _render_index(
 
     total_folders = len(rows)
     total_audits = sum(r["audits"] for r in rows)
+    complete_folders = sum(
+        row.get("completion_state") == "complete" for row in rows
+    )
+    incomplete_folders = sum(
+        row.get("completion_state") == "incomplete" for row in rows
+    )
+    coverage_values = [
+        progress
+        for row in rows
+        if (progress := _coverage_progress(row.get("coverage"))) is not None
+    ]
+    coverage_total = sum(progress[1] for progress in coverage_values)
+    coverage_executed = sum(progress[0] for progress in coverage_values)
+    coverage_value = (
+        f"{round(coverage_executed / coverage_total * 100)}%"
+        if coverage_total else "—"
+    )
+    coverage_meta = (
+        f'{coverage_executed:,} of {coverage_total:,} planned items · '
+        f'{len(coverage_values)} '
+        f'{"report" if len(coverage_values) == 1 else "reports"}'
+        if coverage_total else "No coverage data available"
+    )
+    completion_meta = (
+        f'{incomplete_folders} '
+        f'{"report" if incomplete_folders == 1 else "reports"} incomplete'
+        if incomplete_folders else
+        f'of {total_folders} '
+        f'{"report" if total_folders == 1 else "reports"}'
+    )
     if rows:
         latest_mtime = max(r["mtime"] for r in rows)
         secs_since_latest = max(0, dt.datetime.now().timestamp() - latest_mtime)
@@ -432,22 +462,50 @@ def _render_index(
     from . import html_report as _html_report
 
     dashboard = _html(ui_context.dashboard_name)
+    dashboard_actions = (
+        '<div class="cs-actions argus-dashboard-actions">'
+        '<a class="cs-btn" href="rules">'
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" '
+        'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" '
+        'stroke-linejoin="round" aria-hidden="true">'
+        '<path d="M9 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 '
+        '2-2V6a2 2 0 0 0-2-2h-4"/><rect x="9" y="2" width="6" '
+        'height="4" rx="1"/><path d="m8 13 2 2 6-6"/></svg>'
+        'Team rules</a></div>'
+        if ui_context.dashboard_slug else ""
+    )
     page_head = (
         '<nav class="cs-crumbs" aria-label="Breadcrumbs">'
-        f'<span>{dashboard}</span><span class="sep">›</span>'
-        '<span>Audit reports</span></nav>'
-        '<section class="cs-header"><div>'
-        f'<span class="page-eyebrow">{dashboard}</span>'
-        f'<h1>Audit reports<span class="cs-counter">'
-        f'({total_folders})</span></h1>'
-        f'<p>One report per folder or test plan · {total_audits:,} audits · '
-        f'last refresh {last_refresh_html}.</p></div></section>'
+        '<span>Workspace</span><span class="sep" aria-hidden="true">/</span>'
+        '<span aria-current="page">Overview</span></nav>'
+        '<section class="cs-header argus-dashboard-heading"><div>'
+        '<span class="page-eyebrow">QUALITY AT A GLANCE</span>'
+        '<h1>Audit reports</h1>'
+        '<p>Review execution coverage, explore findings, and keep track '
+        'of your team’s audits.</p>'
+        '</div>'
+        f'{dashboard_actions}</section>'
+        '<dl class="argus-overview" aria-label="Audit overview">'
+        '<div class="argus-overview-card">'
+        '<dt class="argus-overview-label">Reports</dt>'
+        f'<dd class="argus-overview-value">{total_folders:,}</dd>'
+        '<dd class="argus-overview-meta">Folders and test plans</dd></div>'
+        '<div class="argus-overview-card">'
+        '<dt class="argus-overview-label">Audits recorded</dt>'
+        f'<dd class="argus-overview-value">{total_audits:,}</dd>'
+        '<dd class="argus-overview-meta">Across all reports</dd></div>'
+        '<div class="argus-overview-card">'
+        '<dt class="argus-overview-label">Execution coverage</dt>'
+        f'<dd class="argus-overview-value">{coverage_value}</dd>'
+        f'<dd class="argus-overview-meta">{coverage_meta}</dd></div>'
+        '<div class="argus-overview-card">'
+        '<dt class="argus-overview-label">Completed reports</dt>'
+        f'<dd class="argus-overview-value">{complete_folders:,}</dd>'
+        f'<dd class="argus-overview-meta">{completion_meta}</dd></div>'
+        '</dl>'
     )
     from .operator_controls import render as render_operator_controls
     page_head += render_operator_controls(ui_context)
-    if ui_context.dashboard_slug:
-        page_head += '<p><a class="cs-btn" href="rules">Team rules</a></p>'
-
 
     if not rows:
         body = (
@@ -455,7 +513,7 @@ def _render_index(
             + f'{banner_html}'
             + '<div class="cs-container argus-empty" role="status">'
             '<div class="cs-container-header">'
-            '<h2>Nothing to watch yet</h2></div>'
+            '<h2>Your reports will appear here</h2></div>'
             '<div class="cs-card-body">'
             '<p>ARGUS has no audited folders to show.</p>'
             f'<p>Looked under <code>{_html(out_dir)}</code>. Run '
@@ -494,14 +552,35 @@ def _render_index(
                 continue
             section_html_parts.append(
                 _render_folder_section(
-                    section_label, section_rows, active_name))
+                    (
+                        "Recent reports"
+                        if len(sections) == 1
+                        and section_label in {"Other", ui_context.dashboard_name}
+                        else section_label
+                    ),
+                    section_rows,
+                    active_name,
+                )
+            )
 
         search_toolbar = (
+            '<div class="argus-report-list-heading">'
+            '<div><h2>Report library</h2>'
+            '<p>All your audit results, in one place.</p></div>'
+            '<span class="argus-dashboard-updated">'
+            f'Latest update {last_refresh_html}</span></div>'
             '<div class="argus-report-toolbar" role="search">'
+            '<div class="argus-report-search-wrap">'
+            '<svg class="argus-search-icon" width="18" height="18" '
+            'viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+            'stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
+            '<circle cx="10.5" cy="10.5" r="6.5"/>'
+            '<path d="m16 16 4.5 4.5"/></svg>'
             '<input type="search" id="argus-report-search" '
             'class="argus-input argus-report-search" '
             'aria-label="Search reports" autocomplete="off" '
-            'placeholder="Search reports…  (press / to focus)">'
+            'aria-keyshortcuts="/" placeholder="Search reports…">'
+            '<kbd class="argus-search-shortcut" aria-hidden="true">/</kbd></div>'
             '<span class="argus-report-search-count" '
             'id="argus-report-search-count" aria-live="polite">'
             f'{total_folders} of {total_folders} reports</span></div>'
@@ -529,7 +608,7 @@ def _render_index(
         f'{_html_report._cs_topnav("/", ui_context)}'
         '<div class="application-layout" id="application-layout">'
         f'{_html_report._cs_sidenav("./", "reports", False, ui_context)}'
-        f'<main class="argus-main main-content">{body}</main></div>'
+        f'<main class="argus-main main-content argus-index-page">{body}</main></div>'
         f'<script>{_INDEX_JS}</script>'
         f'<script>{_html_report._ARGUS_JS}</script>'
         '</body></html>'
@@ -553,10 +632,12 @@ def _render_folder_section(
         f'<h2>{_html(label)}<span class="cs-counter">'
         f'(<span data-argus-section-count>{len(rows)}</span>)'
         '</span></h2></div>'
+        '<div class="argus-report-table-wrap">'
         '<table class="argus-table cs-folders"><thead><tr>'
-        '<th>Folder</th><th class="argus-num">Audits</th>'
-        '<th>Coverage</th><th>Updated</th><th>Audit status</th><th>Report</th>'
-        f'</tr></thead><tbody>{rows_html}</tbody></table></section>'
+        '<th scope="col">Report</th><th scope="col" class="argus-num">Audits</th>'
+        '<th scope="col">Execution coverage</th>'
+        '<th scope="col">Status</th><th scope="col">Actions</th>'
+        f'</tr></thead><tbody>{rows_html}</tbody></table></div></section>'
     )
 
 
@@ -582,7 +663,7 @@ def _render_folder_row(
     is_active: bool,
 ) -> str:
     """Render one folder row with truthful coverage and completion state."""
-    name = row.get("title") or row["name"]
+    name = str(row.get("title") or row["name"]).replace("_", " ")
     audits = row["audits"]
     mtime = row["mtime"]
     rel_url = row["rel_url"]
@@ -599,24 +680,33 @@ def _render_folder_row(
     if completion in {"complete", "incomplete", "not_applicable"}:
         completion_chip = (
             f'<span class="argus-folder-completion is-{_html(completion)}">'
-            f'{_html(completion.replace("_", " "))}</span>'
+            f'{_html(completion.replace("_", " ").capitalize())}</span>'
         )
     else:
         completion_chip = "—"
     progress = _coverage_progress(row.get("coverage"))
-    coverage_label = ""
     if progress is None:
-        executed = total = bar_pct = 0
-        progress_value = "n/a"
-        progress_aria = "Folder execution progress unavailable"
+        coverage_html = (
+            '<span class="argus-folder-coverage-meta">'
+            'Coverage unavailable</span>'
+        )
     else:
         executed, total, bar_pct = progress
-        progress_value = f"{bar_pct}%"
         progress_aria = (
             f"Folder execution progress: {executed} of {total} "
             f"planned items completed, {bar_pct} percent"
         )
-        coverage_label = f'<span>{executed}/{total} completed</span>'
+        coverage_html = (
+            '<div class="argus-folder-coverage-label">'
+            f'<span class="argus-folder-count">{bar_pct}%</span>'
+            f'<span class="argus-folder-coverage-meta">'
+            f'{executed}/{total} completed</span></div>'
+            '<div class="argus-folder-bar" role="progressbar" '
+            f'aria-label="{_html(progress_aria)}" aria-valuemin="0" '
+            f'aria-valuemax="100" aria-valuenow="{bar_pct}">'
+            f'<span class="argus-folder-bar-fill" style="width:{bar_pct}%"></span>'
+            '</div>'
+        )
     safe_rel_url = _html(urllib.parse.quote(rel_url, safe="/"))
     row_label = (
         f"Open audit report for {name}, {audits} audits"
@@ -640,21 +730,20 @@ def _render_folder_row(
         f'data-argus-report-search="{_html(searchable_name)}" '
         f'data-argus-report-timestamp-ms="{max(0, round(mtime * 1000))}"'
         f'{prefetch}>'
-        f'<td><a class="argus-folder-name" href="{safe_rel_url}">'
-        f'{_html(name)}</a>{active_chip}</td>'
+        '<td><div class="argus-folder-title">'
+        f'<a class="argus-folder-name" href="{safe_rel_url}">'
+        f'{_html(name)}</a>{active_chip}</div>'
+        f'<div class="argus-folder-description" title="{_html(abs_label)}">'
+        f'Updated {relative_time}</div></td>'
         f'<td class="argus-num">{audits:d}</td>'
-        f'<td aria-label="{_html(progress_aria)}">'
-        f'<span class="argus-folder-count">{progress_value}</span> '
-        f'{coverage_label}'
-        '<div class="argus-folder-bar" role="progressbar" '
-        f'aria-label="{_html(progress_aria)}" aria-valuemin="0" '
-        f'aria-valuemax="100" aria-valuenow="{bar_pct}">'
-        f'<span class="argus-folder-bar-fill" style="width:{bar_pct}%"></span>'
-        '</div></td>'
-        f'<td title="{_html(abs_label)}">{relative_time}</td>'
+        f'<td><div class="argus-folder-coverage">{coverage_html}</div></td>'
         f'<td>{completion_chip}</td>'
-        f'<td><a class="cs-btn" href="{safe_rel_url}">Open</a> '
-        f'<a class="cs-btn" href="{_html(urllib.parse.quote(row["name"], safe=""))}/review">Review</a></td>'
+        '<td><div class="argus-folder-actions">'
+        f'<a class="cs-btn cs-btn-primary" href="{safe_rel_url}" '
+        f'aria-label="Open {_html(name)} report">Open</a>'
+        '<a class="cs-btn" '
+        f'href="{_html(urllib.parse.quote(row["name"], safe=""))}/review" '
+        f'aria-label="Review {_html(name)}">Review</a></div></td>'
         '</tr>'
     )
 

@@ -233,7 +233,14 @@ def test_index_relative_times_update_in_browser():
     assert "data-argus-row-label=" in html
 
 
-def test_index_report_search_has_stable_metadata_and_local_prefetch():
+def test_index_report_search_has_stable_metadata_and_local_prefetch(monkeypatch):
+    # Report CLI tests can configure the process-wide dashboard sections.
+    monkeypatch.setattr(
+        argus_serve, "_FOLDER_SECTIONS", list(argus_serve._DEFAULT_FOLDER_SECTIONS)
+    )
+    monkeypatch.setattr(
+        argus_serve, "_SECTION_ORDER", list(argus_serve._DEFAULT_SECTION_ORDER)
+    )
     html = argus_serve._render_index(
         None,
         rows=[
@@ -271,7 +278,7 @@ def test_index_report_search_has_stable_metadata_and_local_prefetch():
     assert "argus-report-search-count" in html
 
 
-def test_index_keeps_open_actions_orange_and_navigation_pinned():
+def test_index_uses_branded_actions_and_pinned_navigation():
     html = argus_serve._render_index(
         None,
         rows=[{
@@ -284,7 +291,7 @@ def test_index_keeps_open_actions_orange_and_navigation_pinned():
     )
 
     assert ".argus-folder-row a.cs-btn" in html
-    assert "--argus-action:#ff9900" in html
+    assert "--argus-action:var(--ui-color-background-button-primary-default)" in html
     assert 'aria-label="Toggle navigation"' in html
     assert (argus_serve._ASSETS_DIR / "shell.js").read_text() in html
     assert '>Open</a>' in html

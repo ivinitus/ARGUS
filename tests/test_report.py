@@ -1810,11 +1810,11 @@ def test_filters_bar_has_expand_collapse_buttons():
     assert 'id="argus-collapse-all"' in html
 
 
-def test_primary_report_ctas_use_amazon_orange():
+def test_primary_report_ctas_use_brand_tokens():
     css = html_report._ARGUS_CS_CSS
 
-    assert "--argus-action:#ff9900" in css
-    assert "--argus-action-hover:#ec7211" in css
+    assert "--argus-action:var(--ui-color-background-button-primary-default)" in css
+    assert "--argus-action-hover:var(--ui-color-background-button-primary-hover)" in css
     for selector in (
         "#argus-coverage-open",
         ".argus-folder-row a.cs-btn",

@@ -5,7 +5,7 @@
 .rules-workspace button,.rules-dialog button,.rules-workspace textarea{font:inherit}
 .rules-workspace button:not(:disabled){cursor:pointer}
 .rules-workspace button:disabled{opacity:.5;cursor:not-allowed}
-.rules-workspace :is(input,select,textarea){font:inherit;border:2px solid var(--ui-color-border-input-default);border-radius:var(--ui-border-radius-input);background:var(--ui-color-background-input-default);color:var(--argus-text);padding:5px 10px;max-width:100%}
+.rules-workspace :is(input,select,textarea){font:inherit;border:1px solid var(--ui-color-border-input-default);border-radius:var(--ui-border-radius-input);background:var(--ui-color-background-input-default);color:var(--argus-text);padding:5px 10px;max-width:100%}
 .rules-workspace :is(input,textarea)::placeholder{color:var(--ui-color-text-input-placeholder);opacity:1}
 .rules-workspace :is(input,select,textarea,summary){scroll-margin-top:64px;scroll-margin-bottom:20px}
 .rules-workspace :is(input:not([type=checkbox]),textarea){width:100%}

@@ -1264,7 +1264,9 @@
   // its bottom edge at the viewport bottom, scrolling up parks its top edge at the
   // top, and in between it moves with the page from wherever it was.
   var rightCol = document.querySelector('.right-column');
-  var STICK_TOP = 60, STICK_GAP = 16, colMode = 'top', lastY = window.pageYOffset;
+  var STICK_GAP = 16, colMode = 'top', lastY = window.pageYOffset;
+  var topnav = document.querySelector('.cs-topnav');
+  var STICK_TOP = (topnav ? topnav.offsetHeight : 48) + STICK_GAP;
   function colStatic() { return !rightCol || getComputedStyle(rightCol).position === 'static'; }
   function stickTop() {
     rightCol.style.position = 'sticky'; rightCol.style.top = STICK_TOP + 'px'; colMode = 'top';

@@ -1,6 +1,9 @@
 /* Personal review workspace. All source evidence is rendered as text or safe URLs. */
 (() => {
   'use strict';
+  try {
+    if (localStorage.getItem('cs.theme') === 'dark') document.documentElement.setAttribute('data-cs-theme', 'dark');
+  } catch (_) { /* Use the default theme when storage is unavailable. */ }
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const team = document.body.dataset.team;
@@ -76,7 +79,7 @@
     options('run', queue.runs.map(run => [run, queue.run_names?.[run] ? `${queue.run_names[run]} (${run})` : run]), 'All runs');
     $('stats').innerHTML = ['pending','investigation','reviewed','unassigned'].map(key => `<div class="stat"><strong>${Number(queue.totals[key] || 0)}</strong><span>${key === 'pending' ? 'Awaiting review' : labels[key]}</span></div>`).join('');
     $('queue-count').textContent = `${queue.filtered_total} matching cases · ${queue.total} total`;
-    $('queue').innerHTML = queue.items.map(row => `<button class="case-row${current?.case.key === row.key ? ' selected' : ''}" data-key="${esc(row.key)}"><strong>${esc(row.test_case || row.key)}</strong><span>${esc(row.key)}</span><small>${esc(row.assignee || 'Unassigned')}</small><span class="review-status">${esc(labels[row.review_state] || labels[row.state] || row.state)}</span></button>`).join('');
+    $('queue').innerHTML = queue.items.map(row => `<button class="case-row${current?.case.key === row.key ? ' selected' : ''}" data-key="${esc(row.key)}"><strong>${esc(row.test_case || row.key)}</strong><span>${esc(row.key)}</span><small>${esc(row.assignee || 'Unassigned')}</small><span class="review-status" data-state="${esc(row.review_state || row.state)}">${esc(labels[row.review_state] || labels[row.state] || row.state)}</span></button>`).join('');
     $('queue').querySelectorAll('[data-key]').forEach(button => {button.onclick = action(() => openCase(button.dataset.key));});
     $('previous').disabled = offset === 0;
     $('next').disabled = offset + queue.items.length >= queue.filtered_total;
@@ -113,6 +116,10 @@
   }
   async function openCase(key) {
     const result = await request('items/' + encodeURIComponent(key)); current = result;
+    $('queue').querySelectorAll('[data-key]').forEach(button => {
+      button.classList.toggle('selected', button.dataset.key === key);
+      button.setAttribute('aria-pressed', String(button.dataset.key === key));
+    });
     const item = result.case, review = result.review || {}, editable = result.assignee === queue.actor && review.state !== 'reviewed';
     const state = review.state || 'pending';
     $('case').innerHTML = `<h2>${esc(item.test_case || item.key)}</h2><p class="muted">${esc(item.key)} · ${esc(item.run || '')}</p><span class="badge ${state === 'reviewed' ? 'completed' : esc(state)}">${state === 'reviewed' ? 'Review completed' : esc(labels[state])}</span>` +

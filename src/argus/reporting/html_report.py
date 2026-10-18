@@ -2241,7 +2241,7 @@ def _render_argus_html_report(
         + '</div>'
     )
     summary_container = (
-        '<div class="cs-container"><div class="cs-container-header">'
+        '<div class="cs-container argus-summary"><div class="cs-container-header">'
         '<h2>Audit summary</h2></div>'
         f'{stat_cards}</div>'
     )
@@ -2315,12 +2315,43 @@ _CS_TOKENS_LIGHT = (
 _ARGUS_CS_CSS = (
     _ASSETS_DIR / "dashboard.css"
 ).read_text(encoding="utf-8")
-_MARK_WHITE_B64 = base64.b64encode(
-    (_ASSETS_DIR / "argus_mark_white.png").read_bytes()
-).decode("ascii")
-_MARK_INK_B64 = base64.b64encode(
-    (_ASSETS_DIR / "argus_mark_ink.png").read_bytes()
-).decode("ascii")
+_APP_MARK = (
+    '<svg class="cs-mark" width="34" height="34" viewBox="0 0 34 34" '
+    'xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    '<rect width="34" height="34" rx="10" fill="#4f46e5"/>'
+    '<path d="M6.5 17s4-7 10.5-7 10.5 7 10.5 7-4 7-10.5 7S6.5 17 6.5 17Z" '
+    'fill="none" stroke="white" stroke-width="1.8"/>'
+    '<circle cx="17" cy="17" r="3.3" fill="white"/></svg>'
+)
+
+
+def _cs_icon(name: str) -> str:
+    """Small, self-contained navigation icons with consistent stroke weight."""
+    paths = {
+        "reports": '<rect x="5" y="3" width="14" height="18" rx="2"/>'
+                   '<path d="M9 8h6M9 12h6M9 16h3"/>',
+        "teams": '<rect x="3" y="3" width="7" height="7" rx="1.5"/>'
+                 '<rect x="14" y="3" width="7" height="7" rx="1.5"/>'
+                 '<rect x="3" y="14" width="7" height="7" rx="1.5"/>'
+                 '<rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+        "rules": '<path d="M4 6h16M4 12h16M4 18h16"/>'
+                 '<circle cx="8" cy="6" r="2" fill="var(--argus-surface)"/>'
+                 '<circle cx="16" cy="12" r="2" fill="var(--argus-surface)"/>'
+                 '<circle cx="10" cy="18" r="2" fill="var(--argus-surface)"/>',
+        "coverage": '<circle cx="12" cy="12" r="9"/>'
+                    '<path d="m8 12 3 3 5-6"/>',
+        "testers": '<circle cx="9" cy="8" r="3"/>'
+                   '<path d="M3 21v-3a6 6 0 0 1 12 0v3M17 5a3 3 0 0 1 0 6'
+                   'm1 4a5 5 0 0 1 3 4v2"/>',
+        "theme": '<path d="M20.5 13A8.5 8.5 0 0 1 11 3.5'
+                 ' 8.5 8.5 0 1 0 20.5 13Z"/>',
+        "menu": '<path d="M4 6h16M4 12h16M4 18h16"/>',
+    }
+    return (
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" '
+        'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" '
+        f'stroke-linejoin="round" aria-hidden="true">{paths[name]}</svg>'
+    )
 
 
 def _cs_page_css(ui_context: ReportUiContext = DEFAULT_UI_CONTEXT) -> str:
@@ -2345,8 +2376,8 @@ def _cs_head_extra(
         base_path=ui_context.asset_base_path,
     )
     return (
-        '<link rel="icon" type="image/png" '
-        f'href="data:image/png;base64,{_MARK_INK_B64}">'
+        '<link rel="icon" type="image/svg+xml" '
+        f'href="data:image/svg+xml;base64,{base64.b64encode(_APP_MARK.encode()).decode()}">'
         f'{preloads}'
         "<script>document.documentElement.classList.add('argus-js');"
         "try{var m=localStorage.getItem('cs.theme');"
@@ -2411,11 +2442,12 @@ def _cs_topnav(
         '<header class="cs-topnav" role="banner">'
         '<div class="cs-topnav-left">'
         '<button type="button" class="cs-nav-toggle" id="cs-nav-toggle" '
-        'aria-label="Toggle navigation" aria-expanded="true">&#9776;</button>'
+        'aria-label="Toggle navigation" aria-expanded="true">'
+        f'{_cs_icon("menu")}</button>'
         f'<a class="cs-identity" href="{root}">'
-        f'<img class="cs-mark" src="data:image/png;base64,{_MARK_WHITE_B64}" '
-        'alt="" width="34" height="34">'
-        '<span class="cs-wordmark">ARGUS</span></a></div>'
+        f'{_APP_MARK}'
+        '<span class="cs-wordmark">ARGUS</span></a>'
+        '<span class="cs-product-label">Quality workspace</span></div>'
         '<nav class="cs-utils" aria-label="Utilities">'
         f'{_cs_docs_link(ui_context)}'
         f'<a class="cs-util" href="{dashboard_href}">'
@@ -2423,7 +2455,7 @@ def _cs_topnav(
         '<span class="cs-util-sep"></span>'
         '<button type="button" class="cs-util cs-gear" '
         'id="cs-theme-toggle" title="Switch visual mode" '
-        'aria-label="Switch visual mode">&#9881;</button>'
+        f'aria-label="Switch visual mode">{_cs_icon("theme")}</button>'
         '</nav></header>'
     )
 
@@ -2454,23 +2486,23 @@ def _cs_sidenav(
 
     if hub_home:
         title = "ARGUS"
-        items = [link("/", "▣", "Teams", active == "teams")]
+        items = [link("/", _cs_icon("teams"), "Teams", active == "teams")]
     else:
         title = ui_context.dashboard_name
-        items = [link(root, "▦", "Audit reports", active == "reports")]
+        items = [link(root, _cs_icon("reports"), "Audit reports", active == "reports")]
         if rules_enabled is None:
             from argus.operations.rule_runtime import enabled
             rules_enabled = enabled(ui_context.dashboard_slug)
         if rules_enabled:
             items.append(link(
                 _team_href(ui_context, ui_context.dashboard_slug) + "rules",
-                "☷", "Team rules", active == "rules",
+                _cs_icon("rules"), "Team rules", active == "rules",
             ))
         if on_report:
             items.append(
                 link(
                     "#",
-                    "✓",
+                    _cs_icon("coverage"),
                     "Coverage",
                     active == "coverage",
                     ' id="nav-coverage"',
@@ -2479,7 +2511,7 @@ def _cs_sidenav(
             items.append(
                 link(
                     "#tester-overview",
-                    "⌁",
+                    _cs_icon("testers"),
                     "Testers",
                     active == "testers",
                 )
@@ -2490,12 +2522,12 @@ def _cs_sidenav(
             '<p class="nav-section-label">Teams</p>'
         )
         if not hub_home:
-            items.append(link("/", "▣", "All teams", False))
+            items.append(link("/", _cs_icon("teams"), "All teams", False))
         for team in ui_context.teams:
             items.append(
                 link(
                     _team_href(ui_context, team.slug),
-                    "▦",
+                    _cs_icon("teams"),
                     team.name,
                     (
                         not hub_home
@@ -2506,7 +2538,8 @@ def _cs_sidenav(
     return (
         '<aside class="side-navigation" aria-label="Primary">'
         '<div class="side-navigation-header">'
-        f'<span class="side-navigation-title">{_html_escape(title)}</span>'
+        '<div><span class="side-navigation-caption">Workspace</span>'
+        f'<span class="side-navigation-title">{_html_escape(title)}</span></div>'
         '<button class="nav-collapse" id="nav-collapse" type="button" '
         'aria-label="Collapse navigation">‹</button></div>'
         f'<nav>{"".join(items)}{_cs_ticket_link(ui_context)}</nav></aside>'
